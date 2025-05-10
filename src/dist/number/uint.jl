@@ -10,9 +10,18 @@ export DistUInt, DistUInt8, DistUInt16, DistUInt32, DistUInt64,
 struct DistUInt{W} <: Dist{BigInt}
     # first index is most significant bit
     bits::Vector{AnyBool}
+    variable_ordering::Vector{Union{Nothing,Vector{Flip}}}
     function DistUInt{W}(b::AbstractVector) where W
         @assert length(b) == W "Expected $W bits from type but got $(length(b)) bits instead"
-        new{W}(b)
+        varord = [nothing for _ in 1:W]
+        new{W}(b, varord)
+    end
+
+    # Constructor that should accept both arguments 
+    function DistUInt{W}(b::AbstractVector, varord::AbstractVector) where W
+        @assert length(b)      == W "Expected $W bits but got $(length(b))" 
+        @assert length(varord) == W "Expected $W flips but got $(length(varord))"
+        new{W}(b, varord)
     end
 end
 
@@ -50,7 +59,11 @@ const DistUInt64= DistUInt{64}
 "Construct a uniform random number"
 function uniform(::Type{DistUInt{W}}, n = W) where W
     @assert W >= n >= 0
-    DistUInt{W}([i > W-n ? flip(0.5, bit_index=(i)) : false for i=1:W])
+    # build variable_ordering[i]: a Flip at positions W-n+1..W, else nothing
+    varord = [ i > W-n ? [flip(0.5, bit_index=i)] : nothing for i in 1:W ]
+    # bits[i] is the same Flip if present, else the constant false
+    bits   = [ vo === nothing ? false : vo[1] for vo in varord ]
+    DistUInt{W}(bits, varord)
 end
 
 
@@ -347,6 +360,34 @@ end
 
 function Base.:(+)(x::DistUInt{W}, y::DistUInt{W}) where W
     z = Vector{AnyBool}(undef, W)
+
+    # println(" -- ADDITION -- \n\tX BITS:")
+    # for b in x.bits
+    #     println("\t\t", b)
+    # end
+    # println("\tX VARIABLE ORDERING:")
+    # for b in x.variable_ordering
+    #     println("\t\t", b)
+    # end
+    # println("\tY BITS:")
+    # for b in y.bits
+    #     println("\t\t", b)
+    # end
+    # println("\tY VARIABLE ORDERING:")
+    # for b in y.variable_ordering
+    #     println("\t\t", b)
+    # end
+
+    # # Collect available 'ordering' values to reassign
+    # flips_x = [f for vec in x.variable_ordering if vec !== nothing for f in vec]
+    # flips_y = [f for vec in y.variable_ordering if vec !== nothing for f in vec]
+    # all_flips = unique(vcat(flips_x, flips_y))
+    # println("\nAll flips: ", all_flips)
+    # orderings = [flip.ordering for flip in all_flips]
+    # sort!(orderings)
+    # println("\nPossible orderings: ", orderings)
+    # # Interleave variable orderings of x and y 
+
 
     carry = false
     for i = W:-1:1
