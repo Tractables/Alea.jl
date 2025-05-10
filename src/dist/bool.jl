@@ -18,10 +18,10 @@ mutable struct Flip <: Dist{Bool}
     const global_id::Int
     prob
     const name
-    ## NEW ## - note that bit_index 0 = MSB
+    ## note that bit_index 1 = MSB
     bit_index::Union{Nothing, Int}
     ordering::Int
-    ## End NEW ##
+
     
     Flip(prob, name, bit_index) = begin
         if prob isa Real
@@ -40,9 +40,9 @@ function Base.show(io::IO, f::Flip)
     p = f.prob
     p = if p isa AbstractFloat round(p, digits=2) else p end
     if isnothing(f.name)
-        print(io, "$(typeof(f))($(f.global_id),$(p), ordering=$(f.ordering)), bit_index=$(f.bit_index))")
+        print(io, "$(typeof(f))($(f.global_id),$(p), ordering=$(f.ordering), bit_index=$(f.bit_index))")
     else
-        print(io, "$(typeof(f))($(f.global_id),$(p),$(f.name), ordering=$(f.ordering)), bit_index=$(f.bit_index))")
+        print(io, "$(typeof(f))($(f.global_id),$(p),$(f.name), ordering=$(f.ordering), bit_index=$(f.bit_index))")
     end
 end
 
