@@ -357,6 +357,39 @@ function extract_flips(bit)
     return []
 end
 
+function interleave(z_varord::Vector{Union{Nothing,Vector{Flip}}}, x::DistUInt{W}, y::DistUInt{W}) where W 
+    
+    # Collect available 'ordering' values to reassign
+    flips_x = [f for vec in x.variable_ordering if vec !== nothing for f in vec]
+    flips_y = [f for vec in y.variable_ordering if vec !== nothing for f in vec]
+    all_flips = unique(vcat(flips_x, flips_y))
+    orderings = [flip.ordering for flip in all_flips]
+    sort!(orderings)
+    # println("\nPossible orderings: ", orderings)
+
+    # Reassign 'ordering's to x.bits and y.bits to use in global ordering 
+    ordering_idx = 1
+    for flip_vector in z_varord
+        if flip_vector !== nothing
+            for flip in flip_vector
+                flip.ordering = orderings[ordering_idx]
+                ordering_idx += 1
+            end
+        end
+    end
+
+    # println("\n -- REASSIGNED ORDERINGS:")
+    # println("\tX BITS:")
+    # for b in x.bits
+    #     println("\t\t", b)
+    # end
+    # println("\tY BITS:")
+    # for b in y.bits
+    #     println("\t\t", b)
+    # end
+
+end
+
 
 function Base.:(+)(x::DistUInt{W}, y::DistUInt{W}) where W
     # z = Vector{AnyBool}(undef, W)
@@ -380,15 +413,6 @@ function Base.:(+)(x::DistUInt{W}, y::DistUInt{W}) where W
     #     println("\t\t", b)
     # end
 
-    # Collect available 'ordering' values to reassign
-    flips_x = [f for vec in x.variable_ordering if vec !== nothing for f in vec]
-    flips_y = [f for vec in y.variable_ordering if vec !== nothing for f in vec]
-    all_flips = unique(vcat(flips_x, flips_y))
-    orderings = [flip.ordering for flip in all_flips]
-    sort!(orderings)
-    println("\nPossible orderings: ", orderings)
-
-
     carry = false
     for i = W:-1:1
         # z[i] = xor(x.bits[i], y.bits[i], carry)
@@ -409,26 +433,8 @@ function Base.:(+)(x::DistUInt{W}, y::DistUInt{W}) where W
         println("\t", vo)
     end
 
-    # Reassign 'ordering's to x.bits and y.bits to use in global ordering 
-    ordering_idx = 1
-    for flip_vector in z_varord
-        if flip_vector !== nothing
-            for flip in flip_vector
-                flip.ordering = orderings[ordering_idx]
-                ordering_idx += 1
-            end
-        end
-    end
+    interleave(z_varord, x, y)
 
-    # println("\n -- REASSIGNED ORDERINGS:")
-    # println("\tX BITS:")
-    # for b in x.bits
-    #     println("\t\t", b)
-    # end
-    # println("\tY BITS:")
-    # for b in y.bits
-    #     println("\t\t", b)
-    # end
     return DistUInt{W}(z_bits, z_varord)
 
 end
