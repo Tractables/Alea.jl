@@ -359,7 +359,9 @@ end
 
 
 function Base.:(+)(x::DistUInt{W}, y::DistUInt{W}) where W
-    z = Vector{AnyBool}(undef, W)
+    # z = Vector{AnyBool}(undef, W)
+    z_bits   = Vector{AnyBool}(undef, W)
+    z_varord = Vector{Union{Nothing,Vector{Flip}}}(undef, W)
 
     # println(" -- ADDITION -- \n\tX BITS:")
     # for b in x.bits
@@ -378,44 +380,57 @@ function Base.:(+)(x::DistUInt{W}, y::DistUInt{W}) where W
     #     println("\t\t", b)
     # end
 
-    # # Collect available 'ordering' values to reassign
-    # flips_x = [f for vec in x.variable_ordering if vec !== nothing for f in vec]
-    # flips_y = [f for vec in y.variable_ordering if vec !== nothing for f in vec]
-    # all_flips = unique(vcat(flips_x, flips_y))
-    # println("\nAll flips: ", all_flips)
-    # orderings = [flip.ordering for flip in all_flips]
-    # sort!(orderings)
-    # println("\nPossible orderings: ", orderings)
-    # # Interleave variable orderings of x and y 
+    # Collect available 'ordering' values to reassign
+    flips_x = [f for vec in x.variable_ordering if vec !== nothing for f in vec]
+    flips_y = [f for vec in y.variable_ordering if vec !== nothing for f in vec]
+    all_flips = unique(vcat(flips_x, flips_y))
+    orderings = [flip.ordering for flip in all_flips]
+    sort!(orderings)
+    println("\nPossible orderings: ", orderings)
 
 
     carry = false
     for i = W:-1:1
-        z[i] = xor(x.bits[i], y.bits[i], carry)
+        # z[i] = xor(x.bits[i], y.bits[i], carry)
+        z_bits[i] = xor(x.bits[i], y.bits[i], carry)
         carry = atleast_two(x.bits[i], y.bits[i], carry)
+
+
+        # --- interleave the flip‐lists at position i ---
+        x_list = x.variable_ordering[i] === nothing ? Flip[] : x.variable_ordering[i]
+        y_list = y.variable_ordering[i] === nothing ? Flip[] : y.variable_ordering[i]
+        combined = vcat(x_list, y_list)
+        z_varord[i] = isempty(combined) ? nothing : combined    # if x and y are 'nothing' at i, make z[i] nothing
     end
     errorcheck() & carry && error("integer overflow in `$x + $y`")
 
-    #= 
-    Iterate through flips used to create SUM variable 'z'
-        z[1] holds the path through the BDD if you enter at the MSB 
-        This traverses all flips, b/c they're all required for the computation
-        Traverses from flips at top of BDD to flips at bottom --> assign ordering based on the visit order of this traversal
-    =#
-
-    traversal = z[1]
-    traversal_flips = unique(extract_flips(traversal))
-    orderings = [flip.ordering for flip in traversal_flips]     # Get available 'ordering' values to reassign to correctly ordered flips
-    sort!(orderings)
-    # println("-- Orderings: ", orderings)
-    ordering_idx = 1
-    for bit in traversal_flips
-        bit.ordering = orderings[ordering_idx]
-        ordering_idx += 1
+    println(" -- Final z variable ordering: ")
+    for vo in z_varord
+        println("\t", vo)
     end
 
+    # Reassign 'ordering's to x.bits and y.bits to use in global ordering 
+    ordering_idx = 1
+    for flip_vector in z_varord
+        if flip_vector !== nothing
+            for flip in flip_vector
+                flip.ordering = orderings[ordering_idx]
+                ordering_idx += 1
+            end
+        end
+    end
 
-    DistUInt{W}(z)
+    # println("\n -- REASSIGNED ORDERINGS:")
+    # println("\tX BITS:")
+    # for b in x.bits
+    #     println("\t\t", b)
+    # end
+    # println("\tY BITS:")
+    # for b in y.bits
+    #     println("\t\t", b)
+    # end
+    return DistUInt{W}(z_bits, z_varord)
+
 end
 
 "Perform addition while ignoring overflow bits"
