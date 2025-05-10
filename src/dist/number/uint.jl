@@ -390,11 +390,35 @@ function interleave(z_varord::Vector{Union{Nothing,Vector{Flip}}}, x::DistUInt{W
 
 end
 
+"""
+ensure_varord!(d::DistUInt{W})
+
+For each bit i=1:W in `d`, if `d.variable_ordering[i] === nothing`,
+calls `extract_flips(d.bits[i])` and:
+
+  • if that returns a non-empty Vector{Flip}, sets `d.variable_ordering[i] = flips`
+  • otherwise leaves it as `nothing`.
+
+This mutates `d` in place.
+"""
+function ensure_varord!(d::DistUInt{W}) where W
+    for i in 1:W
+        if d.variable_ordering[i] === nothing
+            flips = extract_flips(d.bits[i])
+            # only store a list if there’s at least one flip
+            d.variable_ordering[i] = isempty(flips) ? nothing : flips
+        end
+    end
+    return d
+end
 
 function Base.:(+)(x::DistUInt{W}, y::DistUInt{W}) where W
     # z = Vector{AnyBool}(undef, W)
     z_bits   = Vector{AnyBool}(undef, W)
     z_varord = Vector{Union{Nothing,Vector{Flip}}}(undef, W)
+
+    ensure_varord!(x)
+    ensure_varord!(y)
 
     # println(" -- ADDITION -- \n\tX BITS:")
     # for b in x.bits
@@ -427,6 +451,24 @@ function Base.:(+)(x::DistUInt{W}, y::DistUInt{W}) where W
         z_varord[i] = isempty(combined) ? nothing : combined    # if x and y are 'nothing' at i, make z[i] nothing
     end
     errorcheck() & carry && error("integer overflow in `$x + $y`")
+
+    # Keep only unique flips, keep them in earliest index they appear
+    # TODO: this might need to be edited for re-used flips and (a+b)+c scenarios
+    seen = Set{Flip}()
+    for i in 1:length(z_varord)
+        vec = z_varord[i]
+        if vec !== nothing
+            filtered = Flip[]
+            for f in vec
+                # only keep the first occurrence of each Flip
+                if f ∉ seen
+                    push!(filtered, f)
+                    push!(seen, f)
+                end
+            end
+            z_varord[i] = isempty(filtered) ? nothing : filtered
+        end
+    end
 
     println(" -- Final z variable ordering: ")
     for vo in z_varord
