@@ -31,6 +31,12 @@ cd Alea.jl
 julia --project
 ```
 
+**Note:** For Mac users with the latest Apple Silicon chips, please use the following command before proceeding to further steps:
+
+```bash
+julia --project -e "import Pkg;Pkg.add(url=\"https://github.com/rtjoa/CUDD.jl.git\",rev=\"m1compat\")"
+```
+
 In Julia REPL, then use the following command to install all the needed dependencies
 
 ```julia
