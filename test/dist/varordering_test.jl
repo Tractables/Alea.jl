@@ -84,3 +84,39 @@ end
     @test num_nodes(f) == 627
 
 end
+
+@testset "VarOrder Interleaving - If-Then-Else" begin
+
+    a = DistUInt( [flip(0.0), flip(0.2), flip(0.5)])
+    b = DistUInt( [flip(0.0), flip(0.5), ifelse(flip(0.9), flip(0.3), flip(0.7))])
+    c = a + b
+    @test num_nodes(c) == 17
+
+    e = uniform(DistUInt{8}, 7)
+    f = DistUInt( [flip(0.0), flip(0.5), ifelse(flip(0.9), flip(0.3), flip(0.7)), flip(0.5), flip(0.5), flip(0.5), flip(0.5), flip(0.5)])
+    g = e+f
+    @test num_nodes(g) == 70
+
+end
+
+@testset "VarOrder Interleaving - Interdependent" begin
+
+    a = flip(0.5)
+    b = DistUInt( [flip(0.0), a, flip(0.7), flip(0.8), flip(0.6)] )
+    c = DistUInt( [flip(0.0), flip(0.3), flip(0.4), flip(0.2), a] )
+    sum = b+c
+    @test num_nodes(sum) == 45
+
+    a = flip(0.5)
+    b = DistUInt( [flip(0.0), flip(0.7), flip(0.8), flip(0.6), a] )
+    c = DistUInt( [flip(0.0), a, flip(0.3), flip(0.4), flip(0.2)] )
+    sum = b+c
+    @test num_nodes(sum) == 45
+
+    d = flip(0.5)
+    e = DistUInt( [flip(0.0), d, flip(0.5)])
+    f = DistUInt( [flip(0.0), flip(0.5), ifelse(d, flip(0.3), flip(0.7))])
+    g = e+f
+    @test num_nodes(g) == 19
+
+end
