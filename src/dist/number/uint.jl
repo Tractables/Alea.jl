@@ -402,10 +402,10 @@ calls `extract_flips(d.bits[i])` and:
 This mutates `d` in place.
 """
 function ensure_varord!(d::DistUInt{W}) where W
-    for i in 1:W
-        if d.variable_ordering[i] === nothing
+    # check: are all slots `nothing` (ie this DistUInt has never had its variable ordering initialized)
+    if all(v -> v === nothing, d.variable_ordering)
+        for i in 1:W
             flips = extract_flips(d.bits[i])
-            # only store a list if there’s at least one flip
             d.variable_ordering[i] = isempty(flips) ? nothing : flips
         end
     end
