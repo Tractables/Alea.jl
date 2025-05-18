@@ -250,7 +250,7 @@ def handle_figure4_plots(config: Config, er: ExperimentResult) -> None:
 
     combined_df = None
     for key, training_result in er.training_results.items():
-        csv_path = extract(training_result.log_path, r'Saved unique curves to (.*?cumulative_unique_types\.csv)')
+        csv_path = extract(training_result.log_path, r'Saved unique curves to (.*unique_curves.*\.csv)')
         # the csv has no header, so we add it: 'num_samples', 'untrained', 'trained'
         cum_uniq = pd.read_csv(csv_path, sep='\t', header=None)
         cum_uniq.columns = ['num_samples', 'untrained', key]
@@ -265,6 +265,8 @@ def handle_figure4_plots(config: Config, er: ExperimentResult) -> None:
     plot_path = os.path.join(config.output_dir, f"fig4_cumulative_unique_types.png")
 
     assert combined_df is not None
+
+    print(combined_df)
 
     plt.figure(figsize=(10, 6))
     for col in combined_df.columns[1:]:
@@ -375,6 +377,8 @@ def create_figure4_experiment(args: argparse.Namespace) -> Experiment:
                 "julia", "--project", "pbt/experiments/tool.jl",
                 "-f", "-u",
                 "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],2,3)",
+                # small version for testing:
+                # "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>2,Main.Color.t=>0],2,3)",
                 "Pair{SpecEntropy{RBT},Float64}[SpecEntropy{RBT}(2,200,always_true)=>0.03]",
                 str(args.fig4_epochs),
                 "0.1"

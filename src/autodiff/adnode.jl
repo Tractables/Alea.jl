@@ -185,7 +185,7 @@ function backward(n::GetIndex, vals, derivs)
 end
 Base.getindex(x::ADNode, i...) = GetIndex(x, CartesianIndex(i...))
 
-# rtjoa: This could be more elegant (e.g. not require the user to provide the
+# This could be more elegant (e.g. not require the user to provide the
 # derivative of `f`) if we restructured autodiff.jl to be pure.
 # One possible interface is:
 #   `lambda(parameters::Vector{Var}, result::ADNode)::ADFunction`

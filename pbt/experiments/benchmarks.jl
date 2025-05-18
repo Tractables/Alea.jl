@@ -67,14 +67,26 @@ function run_benchmark(
         println(rs.io)
     end
 
-    press = [
-        if m isa FeatureSpecEntropyLossMgr
-            feature_unique_curve(rs, generation.prog, m.feature, UNIQUE_CURVES_SAMPLES)
-        elseif mk_unique_curves
-            feature_unique_curve(rs, generation.prog, identity, UNIQUE_CURVES_SAMPLES)
-        else nothing end
-        for m in loss_mgrs
-    ]
+    function collect_unique_curves()
+        [
+            if m isa FeatureSpecEntropyLossMgr
+                feature_unique_curve(rs, generation.prog, m.feature, UNIQUE_CURVES_SAMPLES)
+            elseif mk_unique_curves
+                # TODO: make not hardcoded for RBT
+                function feat(d)
+                    if isRBTdist(d)
+                        Dice.frombits(d, Dict())
+                    else
+                        nothing
+                    end
+                end
+                feature_unique_curve(rs, generation.prog, feat, UNIQUE_CURVES_SAMPLES)
+            else nothing end
+            for m in loss_mgrs
+        ]
+    end
+
+    press = collect_unique_curves()
 
     emit_stats("initial")
 
@@ -124,14 +136,7 @@ function run_benchmark(
 
     emit_stats("trained")
 
-    postss = [
-        if m isa FeatureSpecEntropyLossMgr
-            feature_unique_curve(rs, generation.prog, m.feature, UNIQUE_CURVES_SAMPLES)
-        elseif mk_unique_curves
-            feature_unique_curve(rs, generation.prog, identity, UNIQUE_CURVES_SAMPLES)
-        else nothing end
-        for m in loss_mgrs
-    ]
+    postss = collect_unique_curves() 
 
     for (loss_config, curve) in zip(loss_configs, curves)
         save_learning_curve(rs.out_dir, curve, join(to_subpath(loss_config), "_"))
@@ -501,8 +506,10 @@ function make_plots(
                 # gr()
             end
 
-            filename = joinpath(rs.out_dir, "feature_dist_" * join(to_subpath(loss_config), "_"))
-            mk_areaplot2(filename, has_header=true, xlabel="Epochs", ylabel="Sample Proportion")
+            if loss_config isa FeatureSpecEntropy
+                filename = joinpath(rs.out_dir, "feature_dist_" * join(to_subpath(loss_config), "_"))
+                mk_areaplot2(filename, has_header=true, xlabel="Epochs", ylabel="Sample Proportion")
+            end
         end
     end
 end
@@ -884,10 +891,12 @@ function feature_unique_curve(rs, prog, feature, n)
     # counter(f, collection)
     for s in samples
         s_feature = feature(s)
-        if !haskey(feature_counts, s_feature)
-            feature_counts[s_feature] = 0
+        if !isnothing(s_feature)
+            if !haskey(feature_counts, s_feature)
+                feature_counts[s_feature] = 0
+            end
+            feature_counts[s_feature] += 1
         end
-        feature_counts[s_feature] += 1
         push!(feature_unique_curve, length(feature_counts))
     end
     feature_unique_curve

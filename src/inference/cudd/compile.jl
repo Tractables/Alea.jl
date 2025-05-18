@@ -121,7 +121,7 @@ function compile_existing(c::BDDCompiler, root::AnyBool)::CuddNode
         c.cache[n]
     end
 
-    # TODO: is GC right with complement arcs? I think so... - Ryan
+    # TODO: is GC right with complement arcs? I think so...
     fi(n::DistNot, call) = begin
         if !haskey(c.cache, n)
             call(n.x)
