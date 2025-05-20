@@ -6,14 +6,14 @@ d = uniform(DistUInt{3}, 2)
 e = uniform(DistUInt{3}, 2)
 f = d-e
 # input_names = string.(get_flips(f) .|> x -> x.global_id)
-print("\tNUM NODES SUB {3}, 2 = ", num_nodes(f))                # Should be 15
+print("\tNUM NODES SUB {3}, 2 = ", num_nodes(f))                # Should be 13
 # dump_dot(f, inames=input_names, filename="threexthree.dot")
 
 d = uniform(DistUInt{4}, 3)
 e = uniform(DistUInt{4}, 3)
 f = d-e
 # input_names = string.(get_flips(f) .|> x -> x.global_id)
-print("\tNUM NODES SUB {4}, 3= ", num_nodes(f))                 # Should be 27
+print("\tNUM NODES SUB {4}, 3= ", num_nodes(f))                 # Should be 22
 # dump_dot(f, inames=input_names, filename="fourxfour.dot")
 
 d = uniform(DistUInt{5}, 4)
@@ -21,20 +21,20 @@ e = uniform(DistUInt{5}, 4)
 f = d-e
 # input_names = string.(get_flips(f) .|> x -> x.global_id)
 print("\tNUM NODES SUB {5}, 4= ", num_nodes(f))
-# dump_dot(f, inames=input_names, filename="fivexfive.dot")   # Should be 42
+# dump_dot(f, inames=input_names, filename="fivexfive.dot")   # Should be 31
 
 d = uniform(DistUInt{8}, 7)
 e = uniform(DistUInt{8}, 7)
 f = d-e
 # input_names = string.(get_flips(f) .|> x -> x.global_id)
-print("\tNUM NODES SUB {8}, 7= ", num_nodes(f))                 # Should be 60
+print("\tNUM NODES SUB {8}, 7= ", num_nodes(f))                 # Should be 58
 # dump_dot(f, inames=input_names, filename="eightxeight.dot")
 
 d = uniform(DistUInt{10}, 9)
 e = uniform(DistUInt{10}, 9)
 f = d-e
 # input_names = string.(get_flips(f) .|> x -> x.global_id)
-print("\tNUM NODES SUB {10}, 9 = ", num_nodes(f))               # Should be 81
+print("\tNUM NODES SUB {10}, 9 = ", num_nodes(f))               # Should be 76
 
 d = uniform(DistUInt{15}, 14)
 e = uniform(DistUInt{15}, 14)
@@ -52,7 +52,7 @@ d = uniform(DistUInt{31}, 30)
 e = uniform(DistUInt{31}, 30)
 f = d-e
 # input_names = string.(get_flips(f) .|> x -> x.global_id)
-print("\tNUM NODES SUB {31}, 30 = ", num_nodes(f))
+print("\tNUM NODES SUB {31}, 30 = ", num_nodes(f))          # Should be 265
 
 # -- End basic unit tests --
 

@@ -409,8 +409,26 @@ function ensure_varord!(d::DistUInt{W}) where W
     return d
 end
 
+function keep_unique_varord_flips(z_varord::Vector{Union{Nothing,Vector{Flip}}})
+    # Keep only unique flips, keep them in earliest index they appear
+    seen = Set{Flip}()
+    for i in 1:length(z_varord)
+        vec = z_varord[i]
+        if vec !== nothing
+            filtered = Flip[]
+            for f in vec
+                # only keep the first occurrence of each Flip
+                if f ∉ seen
+                    push!(filtered, f)
+                    push!(seen, f)
+                end
+            end
+            z_varord[i] = isempty(filtered) ? nothing : filtered
+        end
+    end
+end
+
 function Base.:(+)(x::DistUInt{W}, y::DistUInt{W}) where W
-    # z = Vector{AnyBool}(undef, W)
     z_bits   = Vector{AnyBool}(undef, W)
     z_varord = Vector{Union{Nothing,Vector{Flip}}}(undef, W)
 
@@ -436,7 +454,6 @@ function Base.:(+)(x::DistUInt{W}, y::DistUInt{W}) where W
 
     carry = false
     for i = W:-1:1
-        # z[i] = xor(x.bits[i], y.bits[i], carry)
         z_bits[i] = xor(x.bits[i], y.bits[i], carry)
         carry = atleast_two(x.bits[i], y.bits[i], carry)
 
@@ -449,28 +466,8 @@ function Base.:(+)(x::DistUInt{W}, y::DistUInt{W}) where W
     end
     errorcheck() & carry && error("integer overflow in `$x + $y`")
 
-    # Keep only unique flips, keep them in earliest index they appear
-    # TODO: this might need to be edited for re-used flips and (a+b)+c scenarios
-    seen = Set{Flip}()
-    for i in 1:length(z_varord)
-        vec = z_varord[i]
-        if vec !== nothing
-            filtered = Flip[]
-            for f in vec
-                # only keep the first occurrence of each Flip
-                if f ∉ seen
-                    push!(filtered, f)
-                    push!(seen, f)
-                end
-            end
-            z_varord[i] = isempty(filtered) ? nothing : filtered
-        end
-    end
-
-    println(" -- Final z variable ordering: ")
-    for vo in z_varord
-        println("\t", vo)
-    end
+    # Remove duplicate flips - keep them in the earliest index at which they appear 
+    keep_unique_varord_flips(z_varord)
 
     reassign_orderings(z_varord, x, y)
 
@@ -499,27 +496,56 @@ function Base.max(x::DistUInt{W}, y::DistUInt{W}) where W
 end
 
 function Base.:(-)(x::DistUInt{W}, y::DistUInt{W}) where W
-    z = Vector{AnyBool}(undef, W)
+    z_bits   = Vector{AnyBool}(undef, W)
+    z_varord = Vector{Union{Nothing,Vector{Flip}}}(undef, W)
     borrow = false
+
+    ensure_varord!(x)
+    ensure_varord!(y)
+
+    # println(" -- SUBTRACTION -- \n\tX BITS:")
+    # for b in x.bits
+    #     println("\t\t", b)
+    # end
+    # println("\tX VARIABLE ORDERING:")
+    # for b in x.variable_ordering
+    #     println("\t\t", b)
+    # end
+    # println("\tY BITS:")
+    # for b in y.bits
+    #     println("\t\t", b)
+    # end
+    # println("\tY VARIABLE ORDERING:")
+    # for b in y.variable_ordering
+    #     println("\t\t", b)
+    # end
 
 
     for i=W:-1:1
-        z[i] = xor(x.bits[i], y.bits[i], borrow)
+        # actual subtraction logic
+        z_bits[i] = xor(x.bits[i], y.bits[i], borrow)
         borrow = ifelse(borrow, !x.bits[i] | y.bits[i], !x.bits[i] & y.bits[i])
+
+        # Interleaving flips at position i
+        x_list = x.variable_ordering[i] === nothing ? Flip[] : x.variable_ordering[i]
+        y_list = y.variable_ordering[i] === nothing ? Flip[] : y.variable_ordering[i]
+        combined = vcat(x_list, y_list)
+        z_varord[i] = isempty(combined) ? nothing : combined    # if x and y are 'nothing' at i, make z[i] nothing
     end
     errorcheck() & borrow && error("integer underflow in `-`")
 
-    traversal = z[1]
-    traversal_flips = unique(extract_flips(traversal))
-    orderings = [flip.ordering for flip in traversal_flips]     # Get available 'ordering' values to reassign to correctly ordered flips
-    sort!(orderings)
-    ordering_idx = 1
-    for bit in traversal_flips
-        bit.ordering = orderings[ordering_idx]
-        ordering_idx += 1
-    end
+    # Remove duplicate flips - keep them in the earliest index at which they appear 
+    keep_unique_varord_flips(z_varord)
 
-    DistUInt{W}(z)
+    # println(" -- Final z variable ordering: ")
+    # for vo in z_varord
+    #     println("\t", vo)
+    # end
+
+    reassign_orderings(z_varord, x, y)
+
+    return DistUInt{W}(z_bits, z_varord)
+
 end
 
 function Base.:(<<)(x::DistUInt{W}, n) where W
