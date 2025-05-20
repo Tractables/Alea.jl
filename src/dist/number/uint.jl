@@ -98,8 +98,7 @@ function uniform_arith(::Type{DistUInt{W}}, start, stop) where W
     end
 end
 
-##  just for me to print bit indices (got from ChatGPT)
-    # could be useful down the line for accessing specific bit_index values from uniform uint
+## For accessing bits at a specific index
 function Base.getindex(d::DistUInt{W}, i::Int) where W
     @assert 0 <= i < W "Index $i is out of bounds for DistUInt{$W}."
 
@@ -112,8 +111,6 @@ function Base.getindex(d::DistUInt{W}, i::Int) where W
 
     error("Bit with bit_index $i not found.")
 end
-
-## END Mine
 
 "Construct a uniform random number by case analysis on the bits"
 function uniform_ite(::Type{DistUInt{W}}, start::Int, stop::Int)::DistUInt{W} where W
@@ -357,7 +354,7 @@ function extract_flips(bit)
     return []
 end
 
-function interleave(z_varord::Vector{Union{Nothing,Vector{Flip}}}, x::DistUInt{W}, y::DistUInt{W}) where W 
+function reassign_orderings(z_varord::Vector{Union{Nothing,Vector{Flip}}}, x::DistUInt{W}, y::DistUInt{W}) where W 
     
     # Collect available 'ordering' values to reassign
     flips_x = [f for vec in x.variable_ordering if vec !== nothing for f in vec]
@@ -475,7 +472,7 @@ function Base.:(+)(x::DistUInt{W}, y::DistUInt{W}) where W
         println("\t", vo)
     end
 
-    interleave(z_varord, x, y)
+    reassign_orderings(z_varord, x, y)
 
     return DistUInt{W}(z_bits, z_varord)
 
