@@ -50,9 +50,7 @@ from dataclasses import dataclass
 @dataclass
 class TrainingRun:
     command: List[str]
-    # If supplied for an experiment, check if the log file already exists and
-    # skip the training run if it does
-    existing_log_path: str | None = None
+
 @dataclass
 class TrainingResult:
     log_path: str
@@ -73,18 +71,22 @@ class Config:
 
 def run_training_run(config: Config, run: TrainingRun) -> TrainingResult:
     """Run a Julia command and return the log file path."""
-    if (
-        run.existing_log_path and
-        not config.args.force and
-        os.path.exists(run.existing_log_path)
-    ):
-        print(f"Using existing log path: {run.existing_log_path}")
-        return TrainingResult(run.existing_log_path)
+
+    if config.args.force:
+        existing_log_path = run_command(run.command + ["-l"]).log_path
+        if os.path.exists(existing_log_path):
+            print(f"Using existing log path: {existing_log_path}")
+            return TrainingResult(existing_log_path)
+
+    result = run_command(run.command)
 
     if config.args.verbose:
-        print(f"Running command: {' '.join(run.command)}")
-    
-    result = subprocess.run(run.command, capture_output=True, text=True)
+        print(f"Log file path: {result.log_path}")
+
+    return result
+
+def run_command(command: List[str]) -> TrainingResult:
+    result = subprocess.run(command, capture_output=True, text=True)
     if result.returncode != 0:
         print("Error: Command failed with status", result.returncode)
         print("stdout:", result.stdout)
@@ -96,10 +98,7 @@ def run_training_run(config: Config, run: TrainingRun) -> TrainingResult:
         print("Error: Could not find log file path in output")
         print("stdout:", result.stdout)
         sys.exit(1)
-
-    if config.args.verbose:
-        print(f"Log file path: {log_match.group(1)}")
-    
+ 
     return TrainingResult(log_match.group(1))
 
 def run_experiments_parallel(config: Config, experiments: List[Experiment]) -> List[ExperimentResult]:
@@ -298,7 +297,7 @@ def create_figure2_experiment(args: argparse.Namespace) -> Experiment:
             command=[
                 "julia", "--project", "pbt/experiments/tool.jl",
                 "-f",
-                "LangDrivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],0,3,true)",
+                "LangDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],0,3,true)",
                 f"Pair{{MLELossConfig{{RBT}},Float64}}[MLELossConfig{{RBT}}(depth,Uniform())=>{args.fig2_learning_rate}]",
                 str(args.fig2_epochs),
                 "0.0"
@@ -395,7 +394,6 @@ def create_figure4_experiment(args: argparse.Namespace) -> Experiment:
                 str(args.fig4_epochs),
                 "0.1"
             ],
-            existing_log_path=f"/Users/rtjoa/g/test/Dice.jl/tuning-output/v133_artifact/rbt/langsiblingderived/root_ty=Main.ColorKVTree.t/ty-sizes=Main.ColorKVTree.t-4-Main.Color.t-0/stack_size=2/intwidth=3/spec_entropy/freq=2-spb=200/prop=always_true/0.03/epochs={args.fig4_epochs}/bound=0.1/log.log"
         ),
         "specification": TrainingRun(
             command=[
@@ -406,7 +404,6 @@ def create_figure4_experiment(args: argparse.Namespace) -> Experiment:
                 str(args.fig4_epochs),
                 "0.1"
             ],
-            existing_log_path=f"/Users/rtjoa/g/test/Dice.jl/tuning-output/v133_artifact/rbt/langsiblingderived/root_ty=Main.ColorKVTree.t/ty-sizes=Main.ColorKVTree.t-4-Main.Color.t-0/stack_size=2/intwidth=3/satisfy_property/prop=isRBTdist/0.03/epochs={args.fig4_epochs}/bound=0.1/log.log"
         ),
         "specification_entropy": TrainingRun(
             command=[
@@ -417,7 +414,6 @@ def create_figure4_experiment(args: argparse.Namespace) -> Experiment:
                 str(args.fig4_epochs),
                 "0.1"
             ],
-            existing_log_path=f"/Users/rtjoa/g/test/Dice.jl/tuning-output/v133_artifact/rbt/langsiblingderived/root_ty=Main.ColorKVTree.t/ty-sizes=Main.ColorKVTree.t-4-Main.Color.t-0/stack_size=2/intwidth=3/spec_entropy/freq=2-spb=200/prop=isRBT/0.3/epochs={args.fig4_epochs}/bound=0.1/log.log",
         ),
     })
 

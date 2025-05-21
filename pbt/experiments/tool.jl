@@ -23,6 +23,8 @@ plot_only = "-p" in args
 args = filter(a -> a != "-p", args)
 mk_unique_curves = "-u" in args
 args = filter(a -> a != "-u", args)
+log_only = "-l" ∈ args
+args = filter(a -> a != "-l", args)
 
 if plot_only
     # TAG = "v1110_weighted_se"
@@ -96,6 +98,10 @@ out_dir = joinpath(
     )
 )
 log_path = joinpath(out_dir, if plot_only "plot.log" else "log.log" end)
+if log_only
+    println("Logging to $(log_path)")
+    exit(0)
+end
 if isfile(log_path) && !allow_overwrite
     println("Error: Log already exists at the following path:")
     println(log_path)
