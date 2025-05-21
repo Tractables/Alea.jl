@@ -50,7 +50,9 @@ from dataclasses import dataclass
 @dataclass
 class TrainingRun:
     command: List[str]
-    _for_debug_log_path: str | None = None
+    # If supplied for an experiment, check if the log file already exists and
+    # skip the training run if it does
+    existing_log_path: str | None = None
 @dataclass
 class TrainingResult:
     log_path: str
@@ -71,10 +73,13 @@ class Config:
 
 def run_training_run(config: Config, run: TrainingRun) -> TrainingResult:
     """Run a Julia command and return the log file path."""
-    if config.args.use_debug_log_path:
-        print(f"Using debug log path: {run._for_debug_log_path}")
-        assert run._for_debug_log_path is not None
-        return TrainingResult(run._for_debug_log_path)
+    if (
+        run.existing_log_path and
+        not config.args.force and
+        os.path.exists(run.existing_log_path)
+    ):
+        print(f"Using existing log path: {run.existing_log_path}")
+        return TrainingResult(run.existing_log_path)
 
     if config.args.verbose:
         print(f"Running command: {' '.join(run.command)}")
@@ -390,7 +395,7 @@ def create_figure4_experiment(args: argparse.Namespace) -> Experiment:
                 str(args.fig4_epochs),
                 "0.1"
             ],
-            _for_debug_log_path=f"/Users/rtjoa/g/test/Dice.jl/tuning-output/v133_artifact/rbt/langsiblingderived/root_ty=Main.ColorKVTree.t/ty-sizes=Main.ColorKVTree.t-4-Main.Color.t-0/stack_size=2/intwidth=3/spec_entropy/freq=2-spb=200/prop=always_true/0.03/epochs={args.fig4_epochs}/bound=0.1/log.log"
+            existing_log_path=f"/Users/rtjoa/g/test/Dice.jl/tuning-output/v133_artifact/rbt/langsiblingderived/root_ty=Main.ColorKVTree.t/ty-sizes=Main.ColorKVTree.t-4-Main.Color.t-0/stack_size=2/intwidth=3/spec_entropy/freq=2-spb=200/prop=always_true/0.03/epochs={args.fig4_epochs}/bound=0.1/log.log"
         ),
         "specification": TrainingRun(
             command=[
@@ -401,7 +406,7 @@ def create_figure4_experiment(args: argparse.Namespace) -> Experiment:
                 str(args.fig4_epochs),
                 "0.1"
             ],
-            _for_debug_log_path=f"/Users/rtjoa/g/test/Dice.jl/tuning-output/v133_artifact/rbt/langsiblingderived/root_ty=Main.ColorKVTree.t/ty-sizes=Main.ColorKVTree.t-4-Main.Color.t-0/stack_size=2/intwidth=3/satisfy_property/prop=isRBTdist/0.03/epochs={args.fig4_epochs}/bound=0.1/log.log"
+            existing_log_path=f"/Users/rtjoa/g/test/Dice.jl/tuning-output/v133_artifact/rbt/langsiblingderived/root_ty=Main.ColorKVTree.t/ty-sizes=Main.ColorKVTree.t-4-Main.Color.t-0/stack_size=2/intwidth=3/satisfy_property/prop=isRBTdist/0.03/epochs={args.fig4_epochs}/bound=0.1/log.log"
         ),
         "specification_entropy": TrainingRun(
             command=[
@@ -412,7 +417,7 @@ def create_figure4_experiment(args: argparse.Namespace) -> Experiment:
                 str(args.fig4_epochs),
                 "0.1"
             ],
-            _for_debug_log_path=f"/Users/rtjoa/g/test/Dice.jl/tuning-output/v133_artifact/rbt/langsiblingderived/root_ty=Main.ColorKVTree.t/ty-sizes=Main.ColorKVTree.t-4-Main.Color.t-0/stack_size=2/intwidth=3/spec_entropy/freq=2-spb=200/prop=isRBT/0.3/epochs={args.fig4_epochs}/bound=0.1/log.log",
+            existing_log_path=f"/Users/rtjoa/g/test/Dice.jl/tuning-output/v133_artifact/rbt/langsiblingderived/root_ty=Main.ColorKVTree.t/ty-sizes=Main.ColorKVTree.t-4-Main.Color.t-0/stack_size=2/intwidth=3/spec_entropy/freq=2-spb=200/prop=isRBT/0.3/epochs={args.fig4_epochs}/bound=0.1/log.log",
         ),
     })
 
@@ -452,7 +457,7 @@ def create_figure10_experiment(args: argparse.Namespace) -> Experiment:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Run experiments and generate distribution plots')
     parser.add_argument('--verbose', action='store_true', help='Print detailed file paths')
-    parser.add_argument('--use-debug-log-path', action='store_true', help='Use the debug log path')
+    parser.add_argument('--force', action='store_true', help='Force re-run experiments even if log files already exist')
     parser.add_argument('--parallel', action='store_true', help='Run experiments in parallel')
     parser.add_argument('--all', action='store_true', help='Run all figures')
     parser.add_argument('--fig2', action='store_true', help='Run figure 2 experiments')
