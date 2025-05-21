@@ -50,6 +50,7 @@ from dataclasses import dataclass
 @dataclass
 class TrainingRun:
     command: List[str]
+    _for_debug_log_path: str | None = None
 @dataclass
 class TrainingResult:
     log_path: str
@@ -68,9 +69,14 @@ class Config:
     output_dir: str
     args: argparse.Namespace
 
-def run_training_run(verbose: bool, run: TrainingRun) -> TrainingResult:
+def run_training_run(config: Config, run: TrainingRun) -> TrainingResult:
     """Run a Julia command and return the log file path."""
-    if verbose:
+    if config.args.use_debug_log_path:
+        print(f"Using debug log path: {run._for_debug_log_path}")
+        assert run._for_debug_log_path is not None
+        return TrainingResult(run._for_debug_log_path)
+
+    if config.args.verbose:
         print(f"Running command: {' '.join(run.command)}")
     
     result = subprocess.run(run.command, capture_output=True, text=True)
@@ -86,7 +92,7 @@ def run_training_run(verbose: bool, run: TrainingRun) -> TrainingResult:
         print("stdout:", result.stdout)
         sys.exit(1)
 
-    if verbose:
+    if config.args.verbose:
         print(f"Log file path: {log_match.group(1)}")
     
     return TrainingResult(log_match.group(1))
@@ -99,7 +105,7 @@ def run_experiments_parallel(config: Config, experiments: List[Experiment]) -> L
     job_indices = []  # Keep track of which experiment and key each job belongs to
     for i, experiment in enumerate(experiments):
         for key, training_run in experiment.training_runs.items():
-            jobs.append((config.args.verbose, training_run))
+            jobs.append((config, training_run))
             job_indices.append((i, key))
     
     # Run jobs in parallel
@@ -116,7 +122,7 @@ def run_experiments_parallel(config: Config, experiments: List[Experiment]) -> L
 def run_experiments_sequential(config: Config, experiments: List[Experiment]) -> List[ExperimentResult]:
     """Run experiments sequentially and return log paths."""
     return [ExperimentResult({
-        key: run_training_run(config.args.verbose, training_run)
+        key: run_training_run(config, training_run)
         for key, training_run in experiment.training_runs.items()
     }) for experiment in experiments]
 
@@ -127,7 +133,7 @@ def extract(path: str, pattern: str):
 
     match = re.search(pattern, contents)
     if match is None or len(match.groups()) != 1:
-        print(f"Error: Expected 1 group, got {match}")
+        print(f"Error: Expected 1 group, got {match} (pattern: {pattern}, path: {path})")
         sys.exit(1)
     
     return match.group(1)
@@ -245,9 +251,7 @@ def handle_figure3_plots(config: Config, er: ExperimentResult) -> None:
     shutil.copy2(unique_curves_pattern, output_path)
     print(f"Plot saved to: {output_path}")
 
-def handle_figure4_plots(config: Config, er: ExperimentResult) -> None:
-    """Handle distribution plots for figure 4 experiments."""
-
+def handle_unique_curves(config: Config, er: ExperimentResult, exp_name: str) -> None:
     combined_df = None
     for key, training_result in er.training_results.items():
         csv_path = extract(training_result.log_path, r'Saved unique curves to (.*unique_curves.*\.csv)')
@@ -259,39 +263,42 @@ def handle_figure4_plots(config: Config, er: ExperimentResult) -> None:
             combined_df = cum_uniq
         else:
             assert combined_df['num_samples'].equals(cum_uniq['num_samples'])
-            # only concatenate the 'key' column
-            combined_df = pd.concat([combined_df, cum_uniq[key]], ignore_index=True)
+            combined_df = pd.merge(combined_df, cum_uniq[['num_samples', key]], on='num_samples', how='outer')
     
-    plot_path = os.path.join(config.output_dir, f"fig4_cumulative_unique_types.png")
+    plot_path = os.path.join(config.output_dir, f"{exp_name}_cumulative_unique_types.png")
 
     assert combined_df is not None
-
-    print(combined_df)
 
     plt.figure(figsize=(10, 6))
     for col in combined_df.columns[1:]:
         plt.plot(combined_df['num_samples'], combined_df[col], label=col)
     plt.legend()
+    plt.xlabel("Number of samples")
+    plt.ylabel("# of unique valid RBTs")
     plt.savefig(plot_path)
     plt.close()
-    
+
+def handle_figure4_plots(config: Config, er: ExperimentResult) -> None:
+    """Handle distribution plots for figure 4 experiments."""
+    handle_unique_curves(config, er, "fig4")
 
 def handle_figure10_plots(config: Config, er: ExperimentResult) -> None:
     """Handle distribution plots for figure 10 experiments."""
-    pass
+    handle_unique_curves(config, er, "fig10")
 
 def create_figure2_experiment(args: argparse.Namespace) -> Experiment:
     """Create the list of experiments for figure 2."""
     return Experiment( {
         "rbt_type_based_uniform": TrainingRun(
-        command=[
-            "julia", "--project", "pbt/experiments/tool.jl",
-            "-f",
-            "LangDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],0,3,true)",
-            f"Pair{{MLELossConfig{{RBT}},Float64}}[MLELossConfig{{RBT}}(depth,Uniform())=>{args.fig2_learning_rate}]",
-            str(args.fig2_epochs),
-            "0.0"
-        ]),
+            command=[
+                "julia", "--project", "pbt/experiments/tool.jl",
+                "-f",
+                "LangDrivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],0,3,true)",
+                f"Pair{{MLELossConfig{{RBT}},Float64}}[MLELossConfig{{RBT}}(depth,Uniform())=>{args.fig2_learning_rate}]",
+                str(args.fig2_epochs),
+                "0.0"
+            ],
+        ),
         "rbt_type_based_linear": TrainingRun(
             command=[
                 "julia", "--project", "pbt/experiments/tool.jl",
@@ -300,7 +307,7 @@ def create_figure2_experiment(args: argparse.Namespace) -> Experiment:
                 f"Pair{{MLELossConfig{{RBT}},Float64}}[MLELossConfig{{RBT}}(depth,Linear())=>{args.fig2_learning_rate}]",
                 str(args.fig2_epochs),
                 "0.0"
-            ]
+            ],
         ),
         "stlc_type_based_uniform": TrainingRun(
             command=[
@@ -382,28 +389,31 @@ def create_figure4_experiment(args: argparse.Namespace) -> Experiment:
                 "Pair{SpecEntropy{RBT},Float64}[SpecEntropy{RBT}(2,200,always_true)=>0.03]",
                 str(args.fig4_epochs),
                 "0.1"
-            ]
+            ],
+            _for_debug_log_path=f"/Users/rtjoa/g/test/Dice.jl/tuning-output/v133_artifact/rbt/langsiblingderived/root_ty=Main.ColorKVTree.t/ty-sizes=Main.ColorKVTree.t-4-Main.Color.t-0/stack_size=2/intwidth=3/spec_entropy/freq=2-spb=200/prop=always_true/0.03/epochs={args.fig4_epochs}/bound=0.1/log.log"
         ),
-        # "specification": TrainingRun(
-        #     command=[
-        #         "julia", "--project", "pbt/experiments/tool.jl",
-        #         "-f", "-u",
-        #         "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],2,3)",
-        #         "Pair{SatisfyPropertyLoss{RBT},Float64}[SatisfyPropertyLoss{RBT}(isRBTdist)=>0.03]",
-        #         str(args.fig4_epochs),
-        #         "0.1"
-        #     ]
-        # ),
-        # "specification_entropy": TrainingRun(
-        #     command=[
-        #         "julia", "--project", "pbt/experiments/tool.jl",
-        #         "-f", "-u",
-        #         "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],2,3)",
-        #         "Pair{SpecEntropy{RBT},Float64}[SpecEntropy{RBT}(2,200,isRBT)=>0.3]",
-        #         str(args.fig4_epochs),
-        #         "0.1"
-        #     ]
-        # ),
+        "specification": TrainingRun(
+            command=[
+                "julia", "--project", "pbt/experiments/tool.jl",
+                "-f", "-u",
+                "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],2,3)",
+                "Pair{SatisfyPropertyLoss{RBT},Float64}[SatisfyPropertyLoss{RBT}(isRBTdist)=>0.03]",
+                str(args.fig4_epochs),
+                "0.1"
+            ],
+            _for_debug_log_path=f"/Users/rtjoa/g/test/Dice.jl/tuning-output/v133_artifact/rbt/langsiblingderived/root_ty=Main.ColorKVTree.t/ty-sizes=Main.ColorKVTree.t-4-Main.Color.t-0/stack_size=2/intwidth=3/satisfy_property/prop=isRBTdist/0.03/epochs={args.fig4_epochs}/bound=0.1/log.log"
+        ),
+        "specification_entropy": TrainingRun(
+            command=[
+                "julia", "--project", "pbt/experiments/tool.jl",
+                "-f", "-u",
+                "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],2,3)",
+                "Pair{SpecEntropy{RBT},Float64}[SpecEntropy{RBT}(2,200,isRBT)=>0.3]",
+                str(args.fig4_epochs),
+                "0.1"
+            ],
+            _for_debug_log_path=f"/Users/rtjoa/g/test/Dice.jl/tuning-output/v133_artifact/rbt/langsiblingderived/root_ty=Main.ColorKVTree.t/ty-sizes=Main.ColorKVTree.t-4-Main.Color.t-0/stack_size=2/intwidth=3/spec_entropy/freq=2-spb=200/prop=isRBT/0.3/epochs={args.fig4_epochs}/bound=0.1/log.log",
+        ),
     })
 
 # Figure 10: RBT ablation on bounds, cumulative unique RBTs
@@ -421,7 +431,8 @@ def create_figure10_experiment(args: argparse.Namespace) -> Experiment:
             command=[
                 "julia", "--project", "pbt/experiments/tool.jl",
                 "-f", "-u",
-                "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],2,3) Pair{SpecEntropy{RBT},Float64}[SpecEntropy{RBT}(2,200,isRBT)=>0.3]",
+                "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],2,3)",
+                "Pair{SpecEntropy{RBT},Float64}[SpecEntropy{RBT}(2,200,isRBT)=>0.3]",
                 str(args.fig10_epochs),
                 "0.1"
             ]
@@ -430,7 +441,8 @@ def create_figure10_experiment(args: argparse.Namespace) -> Experiment:
             command=[
                 "julia", "--project", "pbt/experiments/tool.jl",
                 "-f", "-u",
-                "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],2,3) Pair{SpecEntropy{RBT},Float64}[SpecEntropy{RBT}(2,200,isRBT)=>0.3]",
+                "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],2,3)",
+                "Pair{SpecEntropy{RBT},Float64}[SpecEntropy{RBT}(2,200,isRBT)=>0.3]",
                 str(args.fig10_epochs),
                 "0.0"
             ]
@@ -440,6 +452,7 @@ def create_figure10_experiment(args: argparse.Namespace) -> Experiment:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Run experiments and generate distribution plots')
     parser.add_argument('--verbose', action='store_true', help='Print detailed file paths')
+    parser.add_argument('--use-debug-log-path', action='store_true', help='Use the debug log path')
     parser.add_argument('--parallel', action='store_true', help='Run experiments in parallel')
     parser.add_argument('--all', action='store_true', help='Run all figures')
     parser.add_argument('--fig2', action='store_true', help='Run figure 2 experiments')
@@ -455,7 +468,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--fig4-epochs', type=int, help='Number of epochs for figure 4 experiments')
     parser.add_argument('--fig10-epochs', type=int, help='Number of epochs for figure 10 experiments')
     args, unknown = parser.parse_known_args()
-
+    # assert there are no unknown arguments
+    if unknown:
+        print(f"Unknown arguments: {unknown}")
+        sys.exit(1)
     
     # Validate that at least one figure is selected
     if not (args.all or args.fig2 or args.fig3 or args.fig4 or args.fig10):
@@ -463,10 +479,10 @@ def parse_args() -> argparse.Namespace:
         sys.exit(1)
     
     # Check which figure-specific flags were explicitly specified
-    fig2_flags_specified = any(arg.startswith('--fig2-') for arg in unknown)
-    fig3_flags_specified = any(arg.startswith('--fig3-') for arg in unknown)
-    fig4_flags_specified = any(arg.startswith('--fig4-') for arg in unknown)
-    fig10_flags_specified = any(arg.startswith('--fig10-') for arg in unknown)
+    fig2_flags_specified = any(arg.startswith('--fig2') for arg in sys.argv)
+    fig3_flags_specified = any(arg.startswith('--fig3') for arg in sys.argv)
+    fig4_flags_specified = any(arg.startswith('--fig4') for arg in sys.argv)
+    fig10_flags_specified = any(arg.startswith('--fig10') for arg in sys.argv)
 
     # Validate that figure-specific parameters are only used when their figure is enabled
     if fig2_flags_specified and not (args.all or args.fig2):
@@ -509,7 +525,8 @@ def parse_args() -> argparse.Namespace:
 
 def main():
     args = parse_args()
-    output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'experiments-output')
+    output_dir_name = "experiments-output-fast" if args.fast else "experiments-output"
+    output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), output_dir_name)
     os.makedirs(output_dir, exist_ok=True)
     config = Config(output_dir=output_dir, args=args)
     
