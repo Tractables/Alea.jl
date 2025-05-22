@@ -73,19 +73,19 @@ def run_training_run(config: Config, run: TrainingRun) -> TrainingResult:
     """Run a Julia command and return the log file path."""
 
     if config.args.force:
-        existing_log_path = run_command(run.command + ["-l"]).log_path
+        existing_log_path = run_tool(run.command + ["-l"]).log_path
         if os.path.exists(existing_log_path):
             print(f"Using existing log path: {existing_log_path}")
             return TrainingResult(existing_log_path)
 
-    result = run_command(run.command)
+    result = run_tool(run.command)
 
     if config.args.verbose:
         print(f"Log file path: {result.log_path}")
 
     return result
 
-def run_command(command: List[str]) -> TrainingResult:
+def run_tool(command: List[str]) -> TrainingResult:
     result = subprocess.run(command, capture_output=True, text=True)
     if result.returncode != 0:
         print("Error: Command failed with status", result.returncode)
@@ -450,6 +450,40 @@ def create_figure10_experiment(args: argparse.Namespace) -> Experiment:
         )
     })
 
+def create_figure11_experiment(args: argparse.Namespace) -> Experiment:
+    """Create the experiment for figure 11."""
+    return Experiment( {
+        "bst_type_based": TrainingRun(
+            command=[
+                "julia", "--project", "pbt/experiments/tool.jl",
+                "-f",
+                "LangSiblingDerivedGenerator{BST}(Main.KVTree.t,Pair{Type,Integer}[Main.KVTree.t=>4],2,3)", "Pair{SpecEntropy{BST},Float64}[SpecEntropy{BST}(2,200,isBST)=>0.3]", "2000", "0.1"
+            ]
+        ),
+        "rbt_type_based": TrainingRun(
+            command=[
+                "julia", "--project", "pbt/experiments/tool.jl",
+                "-f",
+                "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],2,3)", "Pair{SpecEntropy{RBT},Float64}[SpecEntropy{RBT}(2,200,isRBT)=>0.3]", "2000", "0.1"
+            ]
+        ),
+        "stlc_type_based": TrainingRun(
+            command=[
+                "julia", "--project", "pbt/experiments/tool.jl",
+                "-f",
+                "LangBespokeSTLCGenerator(5,2)", "Pair{MLELossConfig{STLC},Float64}[MLELossConfig{STLC}(num_apps,Target4321())=>1.0]", "250", "0.0"
+            ]
+        )
+    })
+
+def create_figure12_experiment(args: argparse.Namespace) -> Experiment:
+    """Create the experiment for figure 12."""
+    return Experiment( {
+        "": TrainingRun(
+            command=[]
+        )
+    })
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Run experiments and generate distribution plots')
     parser.add_argument('--verbose', action='store_true', help='Print detailed file paths')
@@ -468,6 +502,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--fig3-samples-per-batch', type=int, help='Number of samples per batch for figure 3 experiment')
     parser.add_argument('--fig4-epochs', type=int, help='Number of epochs for figure 4 experiments')
     parser.add_argument('--fig10-epochs', type=int, help='Number of epochs for figure 10 experiments')
+    parser.add_argument('--fig11-training', action='store_true', help='Train generators for figure 11 benchmark')
+    parser.add_argument('--fig12-training', action='store_true', help='Train generators for figure 12 benchmark')
     args, unknown = parser.parse_known_args()
     # assert there are no unknown arguments
     if unknown:
@@ -537,6 +573,8 @@ def main():
     experiments.append(create_figure3_experiment(args) if args.fig3 else empty_experiment)
     experiments.append(create_figure4_experiment(args) if args.fig4 else empty_experiment)
     experiments.append(create_figure10_experiment(args) if args.fig10 else empty_experiment)
+    experiments.append(create_figure11_experiment(args) if args.fig11 else empty_experiment)
+    experiments.append(create_figure12_experiment(args) if args.fig12 else empty_experiment)
     
     if args.parallel:
         result = run_experiments_parallel(config, experiments)
