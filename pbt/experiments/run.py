@@ -43,7 +43,7 @@ import multiprocessing
 from functools import partial
 import glob
 import shutil
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Callable
 from dataclasses import dataclass
 
 
@@ -69,23 +69,31 @@ class Config:
     output_dir: str
     args: argparse.Namespace
 
+@dataclass
+class TargetDistribution:
+    name: str
+    val_to_prob: Callable[[int], float] # val -> prob (non-normalized)
+
 def run_training_run(config: Config, run: TrainingRun) -> TrainingResult:
     """Run a Julia command and return the log file path."""
 
-    if config.args.force:
-        existing_log_path = run_tool(run.command + ["-l"]).log_path
+    if not config.args.force:
+        existing_log_path = run_tool(config, run.command + ["-l"]).log_path
         if os.path.exists(existing_log_path):
             print(f"Using existing log path: {existing_log_path}")
             return TrainingResult(existing_log_path)
 
-    result = run_tool(run.command)
+    result = run_tool(config, run.command)
 
     if config.args.verbose:
         print(f"Log file path: {result.log_path}")
 
     return result
 
-def run_tool(command: List[str]) -> TrainingResult:
+def run_tool(config: Config, command: List[str]) -> TrainingResult:
+    if config.args.verbose:
+        print(f"Running command: {' '.join(command)}")
+
     result = subprocess.run(command, capture_output=True, text=True)
     if result.returncode != 0:
         print("Error: Command failed with status", result.returncode)
@@ -142,16 +150,12 @@ def extract(path: str, pattern: str):
     
     return match.group(1)
 
-def get_target_distribution(initial_dist: pd.DataFrame, is_linear: bool) -> pd.DataFrame:
+def get_target_distribution(initial_dist: pd.DataFrame, target_dist: TargetDistribution) -> pd.DataFrame:
     """Calculate target distribution based on type."""
     max_val = max(initial_dist['val'])
-    if is_linear:
-        target_prob = 1.0 / (max_val + 1)
-        probs = [target_prob] * len(initial_dist)
-    else:
-        probs = [val for val in initial_dist['val']]
-        total = sum(probs)
-        probs = [p/total for p in probs]
+    probs = [target_dist.val_to_prob(val) for val in initial_dist['val']]
+    total = sum(probs)
+    probs = [p/total for p in probs]
     
     return pd.DataFrame({
         'val': initial_dist['val'],
@@ -159,7 +163,7 @@ def get_target_distribution(initial_dist: pd.DataFrame, is_linear: bool) -> pd.D
     })
 
 def plot_distributions(initial_dist: pd.DataFrame, trained_dist: pd.DataFrame, 
-                     output_path: str, target_is_linear: bool, exp_name: str = '') -> None:
+                     output_path: str, td: TargetDistribution, exp_name: str = '') -> None:
     """Plot initial and trained distributions as a bar chart."""
     plt.figure(figsize=(10, 6))
     
@@ -169,7 +173,7 @@ def plot_distributions(initial_dist: pd.DataFrame, trained_dist: pd.DataFrame,
     trained_color = '#1E88E5'  # blue!70!cyan
     initial_color = '#FF3333'  # red!80!white
     
-    target_dist = get_target_distribution(initial_dist, target_is_linear)
+    target_dist = get_target_distribution(initial_dist, td)
     
     plt.bar(x - width, initial_dist['probability'], width, label='Initial', alpha=0.7, color=initial_color)
     plt.bar(x, trained_dist['probability'], width, label='Trained', alpha=0.7, color=trained_color)
@@ -182,7 +186,7 @@ def plot_distributions(initial_dist: pd.DataFrame, trained_dist: pd.DataFrame,
     title = exp_name.replace('_', ' ').title()
     title = title.replace('Rbt', 'RBT').replace('Stlc', 'STLC')
 
-    plt.title(f'{title} ({"Linear" if target_is_linear else "Uniform"})')
+    plt.title(f'{title} ({td.name})')
     
     plt.legend()
     plt.grid(True, alpha=0.3)
@@ -212,7 +216,12 @@ def handle_figure2_plots(config: Config, er : ExperimentResult) -> None:
             sys.exit(1)
         
         plot_path = os.path.join(config.output_dir, f"fig2_{key}.png")
-        plot_distributions(initial_dist, trained_dist, plot_path, key.endswith('linear'), key)
+        if key.endswith('linear'):
+            target_dist = TargetDistribution(name='Linear', val_to_prob=lambda x: x)
+        else:
+            target_dist = TargetDistribution(name='Uniform', val_to_prob=lambda x: 1.0)
+
+        plot_distributions(initial_dist, trained_dist, plot_path, target_dist, key)
         print(f"Plot saved to: {plot_path}")
 
 def handle_figure3_plots(config: Config, er: ExperimentResult) -> None:
@@ -289,6 +298,34 @@ def handle_figure4_plots(config: Config, er: ExperimentResult) -> None:
 def handle_figure10_plots(config: Config, er: ExperimentResult) -> None:
     """Handle distribution plots for figure 10 experiments."""
     handle_unique_curves(config, er, "fig10")
+
+def handle_figure11_plots(config: Config, er: ExperimentResult) -> None:
+    pass
+
+def handle_figure12_plots(config: Config, er: ExperimentResult) -> None:
+    """Handle distribution plots for figure 11 experiments."""
+    training_result = er.training_results["stlc_bespoke"]
+    log_path = training_result.log_path
+
+    initial_path = extract(training_result.log_path, r'Saved metric dist to (.*?loss1_dist_num_apps_initial\.csv)')
+    trained_path = extract(training_result.log_path, r'Saved metric dist to (.*?loss1_dist_num_apps_trained\.csv)')
+
+    if config.args.verbose:
+        print(f"Initial dist: {initial_path}")
+        print(f"Trained dist: {trained_path}")
+    
+    initial_dist = pd.read_csv(initial_path, sep='\t')
+    trained_dist = pd.read_csv(trained_path, sep='\t')
+    
+    if not initial_dist['val'].equals(trained_dist['val']):
+        print("Error: Value columns do not match between initial and trained distributions")
+        sys.exit(1)
+    
+    plot_path = os.path.join(config.output_dir, f"fig12_dist.png")
+    td = TargetDistribution(name='40/30/20/10', val_to_prob=lambda x: {0: 4, 1: 3, 2: 2, 3: 1}.get(x, 0))
+    plot_distributions(initial_dist, trained_dist, plot_path, td, "STLC Bespoke Number of Applications")
+    print(f"Plot saved to: {plot_path}")
+
 
 def create_figure2_experiment(args: argparse.Namespace) -> Experiment:
     """Create the list of experiments for figure 2."""
@@ -471,7 +508,7 @@ def create_figure11_experiment(args: argparse.Namespace) -> Experiment:
             command=[
                 "julia", "--project", "pbt/experiments/tool.jl",
                 "-f",
-                "LangBespokeSTLCGenerator(5,2)", "Pair{MLELossConfig{STLC},Float64}[MLELossConfig{STLC}(num_apps,Target4321())=>1.0]", "250", "0.0"
+                "LangSiblingDerivedGenerator{STLC}(Main.Expr.t,Pair{Type,Integer}[Main.Expr.t=>5,Main.Typ.t=>2],2,3)", "Pair{SpecEntropy{STLC},Float64}[SpecEntropy{STLC}(2,200,wellTyped)=>0.3]", "2000", "0.1"
             ]
         )
     })
@@ -479,8 +516,12 @@ def create_figure11_experiment(args: argparse.Namespace) -> Experiment:
 def create_figure12_experiment(args: argparse.Namespace) -> Experiment:
     """Create the experiment for figure 12."""
     return Experiment( {
-        "": TrainingRun(
-            command=[]
+        "stlc_bespoke": TrainingRun(
+            command=[
+                "julia", "--project", "pbt/experiments/tool.jl",
+                "-f",
+                "LangBespokeSTLCGenerator(5,2)", "Pair{MLELossConfig{STLC},Float64}[MLELossConfig{STLC}(num_apps,Target4321())=>1.0]", "250", "0.0"
+            ]
         )
     })
 
@@ -502,8 +543,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--fig3-samples-per-batch', type=int, help='Number of samples per batch for figure 3 experiment')
     parser.add_argument('--fig4-epochs', type=int, help='Number of epochs for figure 4 experiments')
     parser.add_argument('--fig10-epochs', type=int, help='Number of epochs for figure 10 experiments')
-    parser.add_argument('--fig11-training', action='store_true', help='Train generators for figure 11 benchmark')
-    parser.add_argument('--fig12-training', action='store_true', help='Train generators for figure 12 benchmark')
+    parser.add_argument('--fig11', action='store_true', help='Run figure 11 experiments')
+    parser.add_argument('--fig12', action='store_true', help='Run figure 12 experiments')
     args, unknown = parser.parse_known_args()
     # assert there are no unknown arguments
     if unknown:
@@ -511,8 +552,8 @@ def parse_args() -> argparse.Namespace:
         sys.exit(1)
     
     # Validate that at least one figure is selected
-    if not (args.all or args.fig2 or args.fig3 or args.fig4 or args.fig10):
-        print("Error: Must specify at least one figure to run. Use --all, --fig2, or --fig3.")
+    if not (args.all or args.fig2 or args.fig3 or args.fig4 or args.fig10 or args.fig11 or args.fig12):
+        print("Error: Must specify at least one figure to run. Use --all, --fig2, --fig3, --fig4, --fig10, --fig11, or --fig12.")
         sys.exit(1)
     
     # Check which figure-specific flags were explicitly specified
@@ -581,7 +622,7 @@ def main():
     else:
         result = run_experiments_sequential(config, experiments)
 
-    fig2_result, fig3_result, fig4_result, fig10_result = result
+    fig2_result, fig3_result, fig4_result, fig10_result, fig11_result, fig12_result = result
 
     if args.fig2 or args.all:
         handle_figure2_plots(config, fig2_result)
@@ -594,6 +635,12 @@ def main():
 
     if args.fig10 or args.all:
         handle_figure10_plots(config, fig10_result)
+
+    if args.fig11 or args.all:
+        handle_figure11_plots(config, fig11_result)
+
+    if args.fig12 or args.all:
+        handle_figure12_plots(config, fig12_result)
             
 if __name__ == "__main__":
     main()
