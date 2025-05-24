@@ -97,7 +97,10 @@ out_dir = joinpath(
         ["bound=$(bound)"],
     )
 )
-log_path = joinpath(out_dir, if plot_only "plot.log" else "log.log" end)
+log_name = "log"
+log_name = if plot_only log_name * "_plot" else log_name end 
+log_name = if mk_unique_curves log_name * "_unique" else log_name end
+log_path = joinpath(out_dir, log_name * ".log")
 if log_only
     println("Logging to $(log_path)")
     exit(0)

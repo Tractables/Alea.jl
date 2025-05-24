@@ -186,7 +186,7 @@ def plot_distributions(initial_dist: pd.DataFrame, trained_dist: pd.DataFrame,
     title = exp_name.replace('_', ' ').title()
     title = title.replace('Rbt', 'RBT').replace('Stlc', 'STLC')
 
-    plt.title(f'{title} ({td.name})')
+    plt.title(f'{title}')
     
     plt.legend()
     plt.grid(True, alpha=0.3)
@@ -270,7 +270,7 @@ def handle_unique_curves(config: Config, er: ExperimentResult, exp_name: str) ->
         csv_path = extract(training_result.log_path, r'Saved unique curves to (.*unique_curves.*\.csv)')
         # the csv has no header, so we add it: 'num_samples', 'untrained', 'trained'
         cum_uniq = pd.read_csv(csv_path, sep='\t', header=None)
-        cum_uniq.columns = ['num_samples', 'untrained', key]
+        cum_uniq.columns = ['num_samples', 'Untuned', key]
 
         if combined_df is None:
             combined_df = cum_uniq
@@ -283,8 +283,25 @@ def handle_unique_curves(config: Config, er: ExperimentResult, exp_name: str) ->
     assert combined_df is not None
 
     plt.figure(figsize=(10, 6))
+    
+    # Define color and style mappings
+    style_map = {
+        'Untuned': {'color': 'red'},
+        'Validity': {'color': 'green'},
+        'Entropy': {'color': 'orange'},
+        'Specification Entropy': {'color': 'blue'},
+        # TODO: the below should be blue after we update the paper to do the same
+        'Specification Entropy Without Regularization': {'color': 'red', 'linestyle': 'dotted'}
+    }
+    
     for col in combined_df.columns[1:]:
-        plt.plot(combined_df['num_samples'], combined_df[col], label=col)
+        if col in style_map:
+            plt.plot(combined_df['num_samples'], combined_df[col], label=col, **style_map[col])
+        else:
+            import warnings
+            warnings.warn(f"No style mapping defined for column: {col}")
+            plt.plot(combined_df['num_samples'], combined_df[col], label=col)
+
     plt.legend()
     plt.xlabel("Number of samples")
     plt.ylabel("# of unique valid RBTs")
@@ -300,10 +317,17 @@ def handle_figure10_plots(config: Config, er: ExperimentResult) -> None:
     handle_unique_curves(config, er, "fig10")
 
 def handle_figure11_plots(config: Config, er: ExperimentResult) -> None:
-    pass
+    for key, training_result in er.training_results.items():
+        trained_generator_path = extract(training_result.log_path, r'Saved Coq generator to (.*trained_Generator\.v)')
+        shutil.copy2(trained_generator_path, os.path.join(config.output_dir, f"fig11_{key}_trained_Generator.v"))
+        
 
 def handle_figure12_plots(config: Config, er: ExperimentResult) -> None:
     """Handle distribution plots for figure 11 experiments."""
+    for key, training_result in er.training_results.items():
+        trained_generator_path = extract(training_result.log_path, r'Saved Coq generator to (.*trained_Generator\.v)')
+        shutil.copy2(trained_generator_path, os.path.join(config.output_dir, f"fig11_{key}_trained_Generator.v"))
+
     training_result = er.training_results["stlc_bespoke"]
     log_path = training_result.log_path
 
@@ -420,7 +444,7 @@ def create_figure3_experiment(args: argparse.Namespace) -> Experiment:
 def create_figure4_experiment(args: argparse.Namespace) -> Experiment:
     """Create the list of experiments for figure 4."""
     return Experiment( {
-        "entropy": TrainingRun(
+        "Entropy": TrainingRun(
             command=[
                 "julia", "--project", "pbt/experiments/tool.jl",
                 "-f", "-u",
@@ -432,7 +456,7 @@ def create_figure4_experiment(args: argparse.Namespace) -> Experiment:
                 "0.1"
             ],
         ),
-        "specification": TrainingRun(
+        "Validity": TrainingRun(
             command=[
                 "julia", "--project", "pbt/experiments/tool.jl",
                 "-f", "-u",
@@ -442,7 +466,7 @@ def create_figure4_experiment(args: argparse.Namespace) -> Experiment:
                 "0.1"
             ],
         ),
-        "specification_entropy": TrainingRun(
+        "Specification Entropy": TrainingRun(
             command=[
                 "julia", "--project", "pbt/experiments/tool.jl",
                 "-f", "-u",
@@ -465,7 +489,7 @@ def create_figure4_experiment(args: argparse.Namespace) -> Experiment:
 def create_figure10_experiment(args: argparse.Namespace) -> Experiment:
     """Create the experiment for figure 10."""
     return Experiment( {
-        "specification_entropy": TrainingRun(
+        "Specification Entropy": TrainingRun(
             command=[
                 "julia", "--project", "pbt/experiments/tool.jl",
                 "-f", "-u",
@@ -475,7 +499,7 @@ def create_figure10_experiment(args: argparse.Namespace) -> Experiment:
                 "0.1"
             ]
         ),
-        "specification_entropy_no_bounds": TrainingRun(
+        "Specification Entropy Without Regularization": TrainingRun(
             command=[
                 "julia", "--project", "pbt/experiments/tool.jl",
                 "-f", "-u",
