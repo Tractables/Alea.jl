@@ -316,19 +316,24 @@ def handle_figure10_plots(config: Config, er: ExperimentResult) -> None:
     """Handle distribution plots for figure 10 experiments."""
     handle_unique_curves(config, er, "fig10")
 
-def handle_figure11_plots(config: Config, er: ExperimentResult) -> None:
+def copy_generators(config: Config, er: ExperimentResult) -> None:
+    # create a new directory for the generators if it doesn't exist
+    os.makedirs(os.path.join(config.output_dir, "generators"), exist_ok=True)
+
     for key, training_result in er.training_results.items():
+        initial_generator_path = extract(training_result.log_path, r'Saved Coq generator to (.*initial_Generator\.v)')
         trained_generator_path = extract(training_result.log_path, r'Saved Coq generator to (.*trained_Generator\.v)')
-        shutil.copy2(trained_generator_path, os.path.join(config.output_dir, f"fig11_{key}_trained_Generator.v"))
-        
+        shutil.copy2(initial_generator_path, os.path.join(config.output_dir, f"generators/{key}InitialGenerator.v"))
+        shutil.copy2(trained_generator_path, os.path.join(config.output_dir, f"generators/{key}TrainedGenerator.v"))
+
+def handle_figure11_plots(config: Config, er: ExperimentResult) -> None:
+    copy_generators(config, er)
 
 def handle_figure12_plots(config: Config, er: ExperimentResult) -> None:
     """Handle distribution plots for figure 11 experiments."""
-    for key, training_result in er.training_results.items():
-        trained_generator_path = extract(training_result.log_path, r'Saved Coq generator to (.*trained_Generator\.v)')
-        shutil.copy2(trained_generator_path, os.path.join(config.output_dir, f"fig11_{key}_trained_Generator.v"))
+    copy_generators(config, er)
 
-    training_result = er.training_results["stlc_bespoke"]
+    training_result = er.training_results["STLCBespoke"]
     log_path = training_result.log_path
 
     initial_path = extract(training_result.log_path, r'Saved metric dist to (.*?loss1_dist_num_apps_initial\.csv)')
@@ -514,21 +519,21 @@ def create_figure10_experiment(args: argparse.Namespace) -> Experiment:
 def create_figure11_experiment(args: argparse.Namespace) -> Experiment:
     """Create the experiment for figure 11."""
     return Experiment( {
-        "bst_type_based": TrainingRun(
+        "BSTTypeBased": TrainingRun(
             command=[
                 "julia", "--project", "pbt/experiments/tool.jl",
                 "-f",
                 "LangSiblingDerivedGenerator{BST}(Main.KVTree.t,Pair{Type,Integer}[Main.KVTree.t=>4],2,3)", "Pair{SpecEntropy{BST},Float64}[SpecEntropy{BST}(2,200,isBST)=>0.3]", "2000", "0.1"
             ]
         ),
-        "rbt_type_based": TrainingRun(
+        "RBTTypeBased": TrainingRun(
             command=[
                 "julia", "--project", "pbt/experiments/tool.jl",
                 "-f",
                 "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],2,3)", "Pair{SpecEntropy{RBT},Float64}[SpecEntropy{RBT}(2,200,isRBT)=>0.3]", "2000", "0.1"
             ]
         ),
-        "stlc_type_based": TrainingRun(
+        "STLCTypeBased": TrainingRun(
             command=[
                 "julia", "--project", "pbt/experiments/tool.jl",
                 "-f",
@@ -540,7 +545,7 @@ def create_figure11_experiment(args: argparse.Namespace) -> Experiment:
 def create_figure12_experiment(args: argparse.Namespace) -> Experiment:
     """Create the experiment for figure 12."""
     return Experiment( {
-        "stlc_bespoke": TrainingRun(
+        "STLCBespoke": TrainingRun(
             command=[
                 "julia", "--project", "pbt/experiments/tool.jl",
                 "-f",
