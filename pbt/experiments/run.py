@@ -331,7 +331,6 @@ def handle_figure11_plots(config: Config, er: ExperimentResult) -> None:
 
 def handle_figure12_plots(config: Config, er: ExperimentResult) -> None:
     """Handle distribution plots for figure 11 experiments."""
-    copy_generators(config, er)
 
     training_result = er.training_results["STLCBespoke"]
     log_path = training_result.log_path

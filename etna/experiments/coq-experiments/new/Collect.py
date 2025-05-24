@@ -25,23 +25,12 @@ def collect(results: str):
             run_trial = None
 
             target_strategies = [
-
-    # "BespokeGenerator",
-    # "B51Generator",
-    # "B51AceGenerator",
-    # "B51SEGenerator",
-    # "MoreSamplesGenerator",
-    # "MoreEpochsGenerator",
-
-    # class: bespoke
-    # "BespokeGenerator",
-    # "LBespokeGenerator",
-    # "SBespokeMLENumAppsTarget4321LR1Epochs250Generator",
-
-    # class: type-based
-    "TypeBasedGenerator",
-    "SLSDThinGenerator",
-    "SLSDThinSEFreq2SPB200WellTypedLR30Epochs2000Bound10Generator",
+                # "TypeBasedGenerator",
+                # "STLCTypeBasedInitialGenerator",
+                # "STLCTypeBasedTrainedGenerator",
+                "BespokeGenerator",
+                "STLCBespokeInitialGenerator",
+                "STLCBespokeTrainedGenerator",
             ]
             for s in target_strategies:
                 if not any(

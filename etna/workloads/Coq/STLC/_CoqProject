@@ -3,5 +3,9 @@ Src/Impl.v
 Src/Spec.v
 Strategies/BespokeGenerator.v
 Strategies/TypeBasedGenerator.v
-Runners/BespokeGenerator_test_runner.v
+Runners/STLCTypeBasedTrainedGenerator_test_runner.v
+Runners/STLCBespokeTrainedGenerator_test_runner.v
 Runners/TypeBasedGenerator_test_runner.v
+Runners/STLCTypeBasedInitialGenerator_test_runner.v
+Runners/BespokeGenerator_test_runner.v
+Runners/STLCBespokeInitialGenerator_test_runner.v
