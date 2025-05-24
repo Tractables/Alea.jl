@@ -1,0 +1,69 @@
+{
+    "tasks": {
+        "insert_2": [
+            "test_prop_DeleteInsert",
+            "test_prop_InsertDelete",
+            "test_prop_InsertInsert",
+            "test_prop_InsertModel",
+            "test_prop_InsertPost",
+            "test_prop_InsertUnion",
+            "test_prop_UnionDeleteInsert"
+        ],
+        "union_8": [
+            "test_prop_DeleteUnion",
+            "test_prop_InsertUnion",
+            "test_prop_UnionDeleteInsert",
+            "test_prop_UnionModel",
+            "test_prop_UnionUnionAssoc"
+        ],
+        "insert_1": [
+            "test_prop_DeleteInsert",
+            "test_prop_InsertInsert",
+            "test_prop_InsertModel",
+            "test_prop_InsertPost",
+            "test_prop_InsertUnion",
+            "test_prop_UnionDeleteInsert"
+        ],
+        "union_6": [
+            "test_prop_DeleteUnion",
+            "test_prop_InsertUnion",
+            "test_prop_UnionDeleteInsert",
+            "test_prop_UnionModel",
+            "test_prop_UnionUnionIdem",
+            "test_prop_UnionValid"
+        ],
+        "insert_3": [
+            "test_prop_InsertDelete",
+            "test_prop_InsertInsert",
+            "test_prop_InsertModel",
+            "test_prop_InsertPost",
+            "test_prop_InsertUnion",
+            "test_prop_UnionDeleteInsert"
+        ],
+        "delete_5": [
+            "test_prop_DeleteDelete",
+            "test_prop_DeleteInsert",
+            "test_prop_DeleteModel",
+            "test_prop_DeletePost",
+            "test_prop_DeleteUnion",
+            "test_prop_UnionDeleteInsert"
+        ],
+        "union_7": [
+            "test_prop_DeleteUnion",
+            "test_prop_InsertUnion",
+            "test_prop_UnionDeleteInsert",
+            "test_prop_UnionModel",
+            "test_prop_UnionUnionAssoc",
+            "test_prop_UnionValid"
+        ],
+        "delete_4": [
+            "test_prop_DeleteDelete",
+            "test_prop_DeleteInsert",
+            "test_prop_DeleteModel",
+            "test_prop_DeletePost",
+            "test_prop_DeleteUnion",
+            "test_prop_InsertDelete",
+            "test_prop_UnionDeleteInsert"
+        ]
+    }
+}

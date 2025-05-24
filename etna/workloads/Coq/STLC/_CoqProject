@@ -1,0 +1,7 @@
+-Q . STLC
+Src/Impl.v
+Src/Spec.v
+Strategies/BespokeGenerator.v
+Strategies/TypeBasedGenerator.v
+Runners/BespokeGenerator_test_runner.v
+Runners/TypeBasedGenerator_test_runner.v

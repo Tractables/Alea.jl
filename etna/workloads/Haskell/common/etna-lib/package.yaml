@@ -1,0 +1,18 @@
+name: etna-lib
+version: 0.1.0.0
+
+dependencies:
+    - base >= 4.7 && < 5
+    - QuickCheck
+    - smallcheck
+    - leancheck
+    - template-haskell
+    - timeit
+    - silently
+    - aeson
+    - bytestring
+    - clock
+    - regex-tdfa
+
+library:
+    source-dirs: src

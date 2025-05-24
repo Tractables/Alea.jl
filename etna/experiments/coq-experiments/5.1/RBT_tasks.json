@@ -1,0 +1,66 @@
+{
+    "tasks": {
+        "insert_2": [
+            "test_prop_DeleteInsert",
+            "test_prop_InsertDelete",
+            "test_prop_InsertInsert",
+            "test_prop_InsertModel",
+            "test_prop_InsertPost"
+        ],
+        "miscolor_insert": [
+            "test_prop_InsertValid"
+        ],
+        "swap_ad": [
+            "test_prop_DeleteDelete",
+            "test_prop_DeleteInsert",
+            "test_prop_DeleteModel",
+            "test_prop_DeletePost",
+            "test_prop_DeleteValid",
+            "test_prop_InsertDelete",
+            "test_prop_InsertInsert",
+            "test_prop_InsertModel",
+            "test_prop_InsertPost",
+            "test_prop_InsertValid"
+        ],
+        "insert_1": [
+            "test_prop_DeleteInsert",
+            "test_prop_InsertInsert",
+            "test_prop_InsertModel",
+            "test_prop_InsertPost"
+        ],
+        "insert_3": [
+            "test_prop_InsertDelete",
+            "test_prop_InsertInsert",
+            "test_prop_InsertModel",
+            "test_prop_InsertPost"
+        ],
+        "delete_5": [
+            "test_prop_DeleteDelete",
+            "test_prop_DeleteInsert",
+            "test_prop_DeleteModel",
+            "test_prop_DeletePost",
+            "test_prop_InsertDelete"
+        ],
+        "miscolordelete": [
+            "test_prop_DeleteValid"
+        ],
+        "no_balance_insert_1": [
+            "test_prop_InsertValid"
+        ],
+        "no_balance_insert_2": [
+            "test_prop_InsertValid"
+        ],
+        "delete_4": [
+            "test_prop_DeleteValid"
+        ],
+        "miscolor_balLeft": [
+            "test_prop_DeleteValid"
+        ],
+        "miscolor_join_2": [
+            "test_prop_DeleteValid"
+        ],
+        "swap_bc": [],
+        "miscolor_balRight": [],
+        "miscolor_join_1": []
+    }
+}

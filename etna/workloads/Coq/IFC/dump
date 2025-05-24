@@ -1,0 +1,477 @@
+
+GenSizedBinOpT = 
+{|
+  arbitrarySized :=
+    fun s : nat =>
+    unkeyed
+      (fix arb_aux (size : nat) : G BinOpT :=
+         match size with
+         | 0 =>
+             oneOf_ (returnGen BAdd)
+               [:: returnGen BAdd; returnGen BMult; 
+                  returnGen BJoin; returnGen BFlowsTo; 
+                  returnGen BEq]
+         | S _ =>
+             freq_ (returnGen BAdd)
+               [:: (1, returnGen BAdd); (1, returnGen BMult);
+                   (1, returnGen BJoin); (1, returnGen BFlowsTo);
+                   (1, returnGen BEq)]
+         end) s
+|}
+     : GenSized BinOpT
+
+GenSizedInstr = 
+fun (Label : Type) (mu0_ : Gen Label) =>
+{|
+  arbitrarySized :=
+    fun s : nat =>
+    unkeyed
+      (fix arb_aux (size : nat) : G Instr :=
+         match size with
+         | 0 =>
+             oneOf_
+               (bindGen arbitrary
+                  (fun p0 : Z =>
+                   bindGen arbitrary
+                     (fun p1 : regId => returnGen (Put p0 p1))))
+               [:: bindGen arbitrary
+                     (fun p0 : Z =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (Put p0 p1)));
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (Mov p0 p1)));
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (Load p0 p1)));
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (Store p0 p1)));
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (Write p0 p1)));
+                   bindGen arbitrary
+                     (fun p0 : BinOpT =>
+                      bindGen arbitrary
+                        (fun p1 : regId =>
+                         bindGen arbitrary
+                           (fun p2 : regId =>
+                            bindGen arbitrary
+                              (fun p3 : regId =>
+                               returnGen (BinOp p0 p1 p2 p3)))));
+                   returnGen Nop; returnGen Halt;
+                   bindGen arbitrary (fun p0 : regId => returnGen (Jump p0));
+                   bindGen arbitrary
+                     (fun p0 : Z =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (BNZ p0 p1)));
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId =>
+                         bindGen arbitrary
+                           (fun p2 : regId => returnGen (BCall p0 p1 p2))));
+                   returnGen BRet;
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (Lab p0 p1)));
+                   bindGen arbitrary (fun p0 : regId => returnGen (PcLab p0));
+                   bindGen arbitrary
+                     (fun p0 : Label =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (PutLab p0 p1)));
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId =>
+                         bindGen arbitrary
+                           (fun p2 : regId => returnGen (Alloc p0 p1 p2))));
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (PGetOff p0 p1)));
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId =>
+                         bindGen arbitrary
+                           (fun p2 : regId => returnGen (PSetOff p0 p1 p2))));
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (MSize p0 p1)));
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (MLab p0 p1)))]
+         | S _ =>
+             freq_
+               (bindGen arbitrary
+                  (fun p0 : Z =>
+                   bindGen arbitrary
+                     (fun p1 : regId => returnGen (Put p0 p1))))
+               [:: (1,
+                   bindGen arbitrary
+                     (fun p0 : Z =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (Put p0 p1))));
+                   (1,
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (Mov p0 p1))));
+                   (1,
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (Load p0 p1))));
+                   (1,
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (Store p0 p1))));
+                   (1,
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (Write p0 p1))));
+                   (1,
+                   bindGen arbitrary
+                     (fun p0 : BinOpT =>
+                      bindGen arbitrary
+                        (fun p1 : regId =>
+                         bindGen arbitrary
+                           (fun p2 : regId =>
+                            bindGen arbitrary
+                              (fun p3 : regId =>
+                               returnGen (BinOp p0 p1 p2 p3))))));
+                   (1, returnGen Nop); (1, returnGen Halt);
+                   (1,
+                   bindGen arbitrary (fun p0 : regId => returnGen (Jump p0)));
+                   (1,
+                   bindGen arbitrary
+                     (fun p0 : Z =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (BNZ p0 p1))));
+                   (1,
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId =>
+                         bindGen arbitrary
+                           (fun p2 : regId => returnGen (BCall p0 p1 p2)))));
+                   (1, returnGen BRet);
+                   (1,
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (Lab p0 p1))));
+                   (1,
+                   bindGen arbitrary (fun p0 : regId => returnGen (PcLab p0)));
+                   (1,
+                   bindGen arbitrary
+                     (fun p0 : Label =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (PutLab p0 p1))));
+                   (1,
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId =>
+                         bindGen arbitrary
+                           (fun p2 : regId => returnGen (Alloc p0 p1 p2)))));
+                   (1,
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (PGetOff p0 p1))));
+                   (1,
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId =>
+                         bindGen arbitrary
+                           (fun p2 : regId => returnGen (PSetOff p0 p1 p2)))));
+                   (1,
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (MSize p0 p1))));
+                   (1,
+                   bindGen arbitrary
+                     (fun p0 : regId =>
+                      bindGen arbitrary
+                        (fun p1 : regId => returnGen (MLab p0 p1))))]
+         end) s
+|}
+     : forall Label : Type, Gen Label -> GenSized Instr
+
+Arguments GenSizedInstr {Label}%type_scope {mu0_}
+
+GenSizedPointer = 
+{|
+  arbitrarySized :=
+    fun s : nat =>
+    unkeyed
+      (fix arb_aux (size : nat) : G Pointer :=
+         match size with
+         | 0 | _ =>
+             bindGen arbitrary
+               (fun p0 : mframe =>
+                bindGen arbitrary (fun p1 : Z => returnGen (Ptr p0 p1)))
+         end) s
+|}
+     : GenSized Pointer
+
+GenSizedValue = 
+{|
+  arbitrarySized :=
+    fun s : nat =>
+    unkeyed
+      (fix arb_aux (size : nat) : G Value :=
+         match size with
+         | 0 =>
+             oneOf_ (bindGen arbitrary (fun p0 : Z => returnGen (Vint p0)))
+               [:: bindGen arbitrary (fun p0 : Z => returnGen (Vint p0));
+                   bindGen arbitrary
+                     (fun p0 : Pointer => returnGen (Vptr p0));
+                   bindGen arbitrary (fun p0 : Label => returnGen (Vlab p0))]
+         | S _ =>
+             freq_ (bindGen arbitrary (fun p0 : Z => returnGen (Vint p0)))
+               [:: (1, bindGen arbitrary (fun p0 : Z => returnGen (Vint p0)));
+                   (1,
+                   bindGen arbitrary
+                     (fun p0 : Pointer => returnGen (Vptr p0)));
+                   (1,
+                   bindGen arbitrary (fun p0 : Label => returnGen (Vlab p0)))]
+         end) s
+|}
+     : GenSized Value
+
+GenSizedAtom = 
+{|
+  arbitrarySized :=
+    fun s : nat =>
+    unkeyed
+      (fix arb_aux (size : nat) : G Atom :=
+         match size with
+         | 0 | _ =>
+             bindGen arbitrary
+               (fun p0 : Value =>
+                bindGen arbitrary (fun p1 : Label => returnGen (p0 @ p1)))
+         end) s
+|}
+     : GenSized Atom
+
+GenSizedPtr_atom = 
+{|
+  arbitrarySized :=
+    fun s : nat =>
+    unkeyed
+      (fix arb_aux (size : nat) : G Ptr_atom :=
+         match size with
+         | 0 | _ =>
+             bindGen arbitrary
+               (fun p0 : Z =>
+                bindGen arbitrary (fun p1 : Label => returnGen (PAtm p0 p1)))
+         end) s
+|}
+     : GenSized Ptr_atom
+
+GenSizedStackFrame = 
+{|
+  arbitrarySized :=
+    fun s : nat =>
+    unkeyed
+      (fix arb_aux (size : nat) : G StackFrame :=
+         match size with
+         | 0 | _ =>
+             bindGen arbitrary
+               (fun p0 : Ptr_atom =>
+                bindGen arbitrary
+                  (fun p1 : regSet =>
+                   bindGen arbitrary
+                     (fun p2 : regId =>
+                      bindGen arbitrary
+                        (fun p3 : Label => returnGen (SF p0 p1 p2 p3)))))
+         end) s
+|}
+     : GenSized StackFrame
+
+GenSizedStack = 
+{|
+  arbitrarySized :=
+    fun s : nat =>
+    unkeyed
+      (fix arb_aux (size : nat) : G Stack :=
+         match size with
+         | 0 | _ =>
+             bindGen arbitrary (fun p0 : seq StackFrame => returnGen (ST p0))
+         end) s
+|}
+     : GenSized Stack
+
+GenSizedSState = 
+{|
+  arbitrarySized :=
+    fun s : nat =>
+    unkeyed
+      (fix arb_aux (size : nat) : G SState :=
+         match size with
+         | 0 | _ =>
+             bindGen arbitrary
+               (fun p0 : imem =>
+                bindGen arbitrary
+                  (fun p1 : memory =>
+                   bindGen arbitrary
+                     (fun p2 : Stack =>
+                      bindGen arbitrary
+                        (fun p3 : regSet =>
+                         bindGen arbitrary
+                           (fun p4 : Ptr_atom =>
+                            returnGen (St p0 p1 p2 p3 p4))))))
+         end) s
+|}
+     : GenSized SState
+
+GenSizedVariation = 
+fun (A : Type) (mu2_ : Gen A) =>
+{|
+  arbitrarySized :=
+    fun s : nat =>
+    unkeyed
+      (fix arb_aux (size : nat) : G Variation :=
+         match size with
+         | 0 | _ =>
+             bindGen arbitrary
+               (fun p0 : Label =>
+                bindGen arbitrary
+                  (fun p1 : A =>
+                   bindGen arbitrary (fun p2 : A => returnGen (Var p0 p1 p2))))
+         end) s
+|}
+     : forall A : Type, Gen A -> GenSized Variation
+
+Arguments GenSizedVariation {A}%type_scope {mu2_}
+
+GenSizedmemframe = 
+fun (A : Type) (mu8_ : Gen A) =>
+{|
+  arbitrarySized :=
+    fun s : nat =>
+    unkeyed
+      (fix arb_aux (size : nat) : G (memframe A) :=
+         match size with
+         | 0 | _ =>
+             bindGen arbitrary
+               (fun p0 : Label =>
+                bindGen arbitrary (fun p1 : seq A => returnGen (Fr p0 p1)))
+         end) s
+|}
+     : forall A : Type, Gen A -> GenSized (memframe A)
+
+Arguments GenSizedmemframe {A}%type_scope {mu8_}
+
+genListSized = 
+fun (A : Type) (H : GenSized A) =>
+{| arbitrarySized := fun x : nat => listOf (arbitrarySized x) |}
+     : forall A : Type, GenSized A -> GenSized (seq A)
+
+Arguments genListSized {A}%type_scope {H}
+
+listOf = 
+fun (G : Type -> Type) (PG : Producer G) (A : Type) (g : G A) =>
+sized
+  (fun n : nat => Monad.bind (choose (0, n)) (fun k : nat => vectorOf k g))
+     : forall G : Type -> Type,
+       Producer G -> forall A : Type, G A -> G (seq A)
+
+vectorOf = 
+fun (G : Type -> Type) (PG : Producer G) (A : Type) (k : nat) (g : G A) =>
+foldr
+  (fun (m : G A) (m' : G (seq A)) =>
+   Monad.bind m
+     (fun x : A => Monad.bind m' (fun xs : seq A => ret (x :: xs))))
+  (ret [::]) (nseq k g)
+     : forall G : Type -> Type,
+       Producer G -> forall A : Type, nat -> G A -> G (seq A)
+
+Arguments vectorOf {G}%function_scope {PG} {A}%type_scope k%nat_scope g
+
+
+Arguments listOf {G}%function_scope {PG} {A}%type_scope g
+
+Map.genSizedMap = 
+fun (elt : Type) (H0 : GenSized Label) (H1 : GenSized elt) =>
+{|
+  arbitrarySized :=
+    fun s : nat =>
+    Monad.bind (vectorOf s (arbitrarySized s))
+      (fun keys : seq Label =>
+       Monad.bind (vectorOf s (arbitrarySized s))
+         (fun vals : seq elt => ret (Map.from_list (List.combine keys vals))))
+|}
+     : forall elt : Type,
+       GenSized Label -> GenSized elt -> GenSized (Map.t elt)
+
+Arguments Map.genSizedMap [elt]%type_scope {H0 H1}
+
+List.combine = 
+fun A B : Type =>
+fix combine (l : seq A) (l' : seq B) {struct l} : seq (A * B) :=
+  match l with
+  | [::] => [::]
+  | x :: tl =>
+      match l' with
+      | [::] => [::]
+      | y :: tl' => (x, y) :: combine tl tl'
+      end
+  end
+     : forall A B : Type, seq A -> seq B -> seq (A * B)
+
+Arguments List.combine [A B]%type_scope (l l')%seq_scope
+
+
+Print Instances Gen.
+genOption : forall {A : Type} {_ : Gen A}, Gen (option A) | 3
+GenOfGenSized : forall {A : Type} {_ : GenSized A}, Gen A
+genPair : forall {A B : Type} {_ : Gen A} {_ : Gen B}, Gen (prod A B)
+genList : forall {A : Type} {_ : Gen A}, Gen (list A) | 3
+
+Print Instances GenSized.
+GenSizedVariation : forall {A : Type}, Gen A -> GenSized Variation |
+42
+GenSizedLabel : GenSized Label |
+42
+genZSized : GenSized Z
+genNSized : GenSized N
+GenSizedSState : GenSized SState |
+42
+genBoolSized : GenSized bool
+GenSizedBinOpT : GenSized BinOpT | 42
+GenSizedAtom : GenSized Atom | 42
+GenSizedStackFrame : GenSized StackFrame |
+42
+gen_block : GenSized mframe
+GenSizedValue : GenSized Value | 42
+GenSizedStack : GenSized Stack |
+42
+GenSizedInstr : forall {Label : Type}, Gen Label -> GenSized Instr |
+42
+GenSizedmemframe : forall {A : Type}, Gen A -> GenSized (memframe A) |
+42
+Map.genSizedMap :
+forall [elt : Type], GenSized Label -> GenSized elt -> GenSized (Map.t elt)
+GenSizedPointer : GenSized Pointer |
+42
+genPairSized :
+forall {A B : Type}, GenSized A -> GenSized B -> GenSized (A * B)
+GenSizedPtr_atom : GenSized Ptr_atom |
+42
+genListSized : forall {A : Type}, GenSized A -> GenSized (seq A)
+genNatSized : GenSized nat

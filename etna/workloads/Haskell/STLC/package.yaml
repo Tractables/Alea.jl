@@ -1,0 +1,23 @@
+name: etna-workload
+
+dependencies:
+    - base >= 4.7 && < 5
+    - etna-lib
+    - QuickCheck
+    - generic-random
+    - smallcheck
+    - leancheck
+
+library:
+    source-dirs: src
+
+executables:
+    etna-workload:
+        main: Main.hs
+        source-dirs: app
+        ghc-options:
+            - -threaded
+            - -rtsopts
+            - -with-rtsopts=-N
+        dependencies:
+            - etna-workload
