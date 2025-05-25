@@ -360,7 +360,7 @@ def create_figure2_experiment(args: argparse.Namespace) -> Experiment:
     return Experiment( {
         "rbt_type_based_uniform": TrainingRun(
             command=[
-                "julia", "--project", "pbt/experiments/tool.jl",
+                "julia", "--project", "experiments/tool.jl",
                 "-f",
                 "LangDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],0,3,true)",
                 f"Pair{{MLELossConfig{{RBT}},Float64}}[MLELossConfig{{RBT}}(depth,Uniform())=>{args.fig2_learning_rate}]",
@@ -370,7 +370,7 @@ def create_figure2_experiment(args: argparse.Namespace) -> Experiment:
         ),
         "rbt_type_based_linear": TrainingRun(
             command=[
-                "julia", "--project", "pbt/experiments/tool.jl",
+                "julia", "--project", "experiments/tool.jl",
                 "-f",
                 "LangDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],0,3,true)",
                 f"Pair{{MLELossConfig{{RBT}},Float64}}[MLELossConfig{{RBT}}(depth,Linear())=>{args.fig2_learning_rate}]",
@@ -380,7 +380,7 @@ def create_figure2_experiment(args: argparse.Namespace) -> Experiment:
         ),
         "stlc_type_based_uniform": TrainingRun(
             command=[
-                "julia", "--project", "pbt/experiments/tool.jl",
+                "julia", "--project", "experiments/tool.jl",
                 "-f",
                 "LangDerivedGenerator{STLC}(Main.Expr.t,Pair{Type,Integer}[Main.Expr.t=>5,Main.Typ.t=>2],0,3,true)",
                 f"Pair{{MLELossConfig{{STLC}},Float64}}[MLELossConfig{{STLC}}(depth,Uniform())=>{args.fig2_learning_rate}]",
@@ -390,7 +390,7 @@ def create_figure2_experiment(args: argparse.Namespace) -> Experiment:
         ),
         "stlc_type_based_linear": TrainingRun(
             command=[
-                "julia", "--project", "pbt/experiments/tool.jl",
+                "julia", "--project", "experiments/tool.jl",
                 "-f",
                 "LangDerivedGenerator{STLC}(Main.Expr.t,Pair{Type,Integer}[Main.Expr.t=>5,Main.Typ.t=>2],0,3,true)",
                 f"Pair{{MLELossConfig{{STLC}},Float64}}[MLELossConfig{{STLC}}(depth,Linear())=>{args.fig2_learning_rate}]",
@@ -400,7 +400,7 @@ def create_figure2_experiment(args: argparse.Namespace) -> Experiment:
             ),
             "stlc_bespoke_uniform": TrainingRun(
                 command=[
-                "julia", "--project", "pbt/experiments/tool.jl",
+                "julia", "--project", "experiments/tool.jl",
                 "-f",
                 "LangBespokeSTLCGenerator(5,2)",
                 f"Pair{{MLELossConfig{{STLC}},Float64}}[MLELossConfig{{STLC}}(depth,Uniform())=>{args.fig2_learning_rate}]",
@@ -410,7 +410,7 @@ def create_figure2_experiment(args: argparse.Namespace) -> Experiment:
         ),
         "stlc_bespoke_linear": TrainingRun(
             command=[
-                "julia", "--project", "pbt/experiments/tool.jl",
+                "julia", "--project", "experiments/tool.jl",
                 "-f",
                 "LangBespokeSTLCGenerator(5,2)",
                 f"Pair{{MLELossConfig{{STLC}},Float64}}[MLELossConfig{{STLC}}(depth,Linear())=>{args.fig2_learning_rate}]",
@@ -425,7 +425,7 @@ def create_figure3_experiment(args: argparse.Namespace) -> Experiment:
     return Experiment( {
         "": TrainingRun(
             command=[
-                "julia", "--project", "pbt/experiments/tool.jl",
+                "julia", "--project", "experiments/tool.jl",
             "-f",
             "LangSiblingDerivedGenerator{STLC}(Main.Expr.t,Pair{Type,Integer}[Main.Expr.t=>5,Main.Typ.t=>2],2,3)",
             f"Pair{{FeatureSpecEntropy{{STLC}},Float64}}[FeatureSpecEntropy{{STLC}}(1,{args.fig3_samples_per_batch},wellTyped,typecheck_ft,true)=>{args.fig3_learning_rate}]",
@@ -450,7 +450,7 @@ def create_figure4_experiment(args: argparse.Namespace) -> Experiment:
     return Experiment( {
         "Entropy": TrainingRun(
             command=[
-                "julia", "--project", "pbt/experiments/tool.jl",
+                "julia", "--project", "experiments/tool.jl",
                 "-f", "-u",
                 "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],2,3)",
                 # small version for testing:
@@ -462,7 +462,7 @@ def create_figure4_experiment(args: argparse.Namespace) -> Experiment:
         ),
         "Validity": TrainingRun(
             command=[
-                "julia", "--project", "pbt/experiments/tool.jl",
+                "julia", "--project", "experiments/tool.jl",
                 "-f", "-u",
                 "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],2,3)",
                 "Pair{SatisfyPropertyLoss{RBT},Float64}[SatisfyPropertyLoss{RBT}(isRBTdist)=>0.03]",
@@ -472,7 +472,7 @@ def create_figure4_experiment(args: argparse.Namespace) -> Experiment:
         ),
         "Specification Entropy": TrainingRun(
             command=[
-                "julia", "--project", "pbt/experiments/tool.jl",
+                "julia", "--project", "experiments/tool.jl",
                 "-f", "-u",
                 "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],2,3)",
                 "Pair{SpecEntropy{RBT},Float64}[SpecEntropy{RBT}(2,200,isRBT)=>0.3]",
@@ -495,7 +495,7 @@ def create_figure10_experiment(args: argparse.Namespace) -> Experiment:
     return Experiment( {
         "Specification Entropy": TrainingRun(
             command=[
-                "julia", "--project", "pbt/experiments/tool.jl",
+                "julia", "--project", "experiments/tool.jl",
                 "-f", "-u",
                 "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],2,3)",
                 "Pair{SpecEntropy{RBT},Float64}[SpecEntropy{RBT}(2,200,isRBT)=>0.3]",
@@ -505,7 +505,7 @@ def create_figure10_experiment(args: argparse.Namespace) -> Experiment:
         ),
         "Specification Entropy Without Regularization": TrainingRun(
             command=[
-                "julia", "--project", "pbt/experiments/tool.jl",
+                "julia", "--project", "experiments/tool.jl",
                 "-f", "-u",
                 "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],2,3)",
                 "Pair{SpecEntropy{RBT},Float64}[SpecEntropy{RBT}(2,200,isRBT)=>0.3]",
@@ -520,21 +520,21 @@ def create_figure11_experiment(args: argparse.Namespace) -> Experiment:
     return Experiment( {
         "BSTTypeBased": TrainingRun(
             command=[
-                "julia", "--project", "pbt/experiments/tool.jl",
+                "julia", "--project", "experiments/tool.jl",
                 "-f",
                 "LangSiblingDerivedGenerator{BST}(Main.KVTree.t,Pair{Type,Integer}[Main.KVTree.t=>4],2,3)", "Pair{SpecEntropy{BST},Float64}[SpecEntropy{BST}(2,200,isBST)=>0.3]", "2000", "0.1"
             ]
         ),
         "RBTTypeBased": TrainingRun(
             command=[
-                "julia", "--project", "pbt/experiments/tool.jl",
+                "julia", "--project", "experiments/tool.jl",
                 "-f",
                 "LangSiblingDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],2,3)", "Pair{SpecEntropy{RBT},Float64}[SpecEntropy{RBT}(2,200,isRBT)=>0.3]", "2000", "0.1"
             ]
         ),
         "STLCTypeBased": TrainingRun(
             command=[
-                "julia", "--project", "pbt/experiments/tool.jl",
+                "julia", "--project", "experiments/tool.jl",
                 "-f",
                 "LangSiblingDerivedGenerator{STLC}(Main.Expr.t,Pair{Type,Integer}[Main.Expr.t=>5,Main.Typ.t=>2],2,3)", "Pair{SpecEntropy{STLC},Float64}[SpecEntropy{STLC}(2,200,wellTyped)=>0.3]", "2000", "0.1"
             ]
@@ -546,7 +546,7 @@ def create_figure12_experiment(args: argparse.Namespace) -> Experiment:
     return Experiment( {
         "STLCBespoke": TrainingRun(
             command=[
-                "julia", "--project", "pbt/experiments/tool.jl",
+                "julia", "--project", "experiments/tool.jl",
                 "-f",
                 "LangBespokeSTLCGenerator(5,2)", "Pair{MLELossConfig{STLC},Float64}[MLELossConfig{STLC}(num_apps,Target4321())=>1.0]", "250", "0.0"
             ]
