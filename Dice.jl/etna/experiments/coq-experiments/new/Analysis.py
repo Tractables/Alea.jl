@@ -13,18 +13,12 @@ def analyze(results: str, images: str):
     # Generate task bucket charts used in Figure 3.
 
     strategies = [
-
-    # class: bespoke
-    # "BespokeGenerator",
-    # "LBespokeGenerator",
-    # "SBespokeMLENumAppsTarget4321LR1Epochs250Generator",
-
-# TB
-    "TypeBasedGenerator",
-    "SLSDThinGenerator",
-    "SLSDThinSEFreq2SPB200WellTypedLR30Epochs2000Bound10Generator",
-
-
+        # "TypeBasedGenerator",
+        # "STLCTypeBasedInitialGenerator",
+        # "STLCTypeBasedTrainedGenerator",
+        "BespokeGenerator",
+        "STLCBespokeInitialGenerator",
+        "STLCBespokeTrainedGenerator",
     ]
     for workload in ['STLC']:
         times = partial(stacked_barchart_times, case=workload, df=df)

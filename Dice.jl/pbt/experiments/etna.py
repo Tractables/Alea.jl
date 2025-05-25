@@ -2,7 +2,8 @@
 
 
 # opam setups
-# opam switch create 4.10.0+af
+# opam switch create 4.10.0+afl
+# opam pin coq 8.15.2
 
 # $ ls experiments-output/generators 
 # BSTTypeBasedInitialGenerator.v  RBTTypeBasedInitialGenerator.v  STLCBespokeInitialGenerator.v   STLCTypeBasedInitialGenerator.v
@@ -38,6 +39,7 @@ def copy_generators():
 
             shutil.copy2(os.path.join(source_dir, generator), os.path.join(destination_dir, workload, "Strategies", generator))
     
+    """
     # cd to etna
     os.chdir("etna")
     os.system("python3 qc-checker.py use_new_qc")
@@ -49,6 +51,7 @@ def copy_generators():
     # mkdir etna/data/artifact
     os.makedirs("data/artifact", exist_ok=True)
     os.system("python3 experiments/coq-experiments/new/Collect.py --data=data/artifact")
+    """
 
 if __name__ == "__main__":
     copy_generators()
