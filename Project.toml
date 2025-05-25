@@ -5,5 +5,6 @@ version = "0.1.0"
 
 [deps]
 CUDD = "345a2cc7-28d8-58b2-abdf-cff77ea7d7f1"
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 Dice = "94eeadfc-1ba6-40b7-9ed8-dee71557d525"
 IRTools = "7869d1d1-7146-5819-86e3-90919afe41df"
