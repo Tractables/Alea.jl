@@ -1,0 +1,17 @@
+name = "CUDD"
+uuid = "345a2cc7-28d8-58b2-abdf-cff77ea7d7f1"
+version = "0.3.0"
+
+[deps]
+CEnum = "fa961155-64e5-5f13-b03f-caf6b980ea82"
+CUDD_jll = "81065c4a-a3f9-5a95-915d-40e4a6065040"
+
+[compat]
+CEnum = "0.4"
+julia = "1.6, 1.8"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
