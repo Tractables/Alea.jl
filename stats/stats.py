@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import re
 import subprocess
 import math
 import sys
@@ -15,10 +16,11 @@ parser = ArgumentParser(prog='stats.py', formatter_class=RawTextHelpFormatter)
 
 parser.add_argument(
     'mode',
-    choices=["u", "us", "d"],
+    choices=["u", "us", "d", "t"],
     metavar="MODE",
     help="One of:" +
     "\n    u: Unique over time" +
+    "\n    t: Just time how long to get samples."
     "\n    us: Unique shapes over time." +
     "\n    d: Distributions of metrics."
 )
@@ -39,11 +41,13 @@ class Mode(Enum):
     UNIQUE = auto()
     UNIQUE_SHAPES = auto()
     DISTRIBUTIONS = auto()
+    TIMINGS = auto()
 
 MODE_OPTIONS = {
     "u": Mode.UNIQUE,
     "us": Mode.UNIQUE_SHAPES,
     "d": Mode.DISTRIBUTIONS,
+    "t": Mode.TIMINGS,
 }
 
 mode = MODE_OPTIONS[args.mode]
@@ -54,18 +58,13 @@ ORDER: List[str] = { # Put rows in this order and also assert that these generat
     "STLC": [
         # class: bespoke
         # "BespokeGenerator",
-        # "LBespokeGenerator",
-        # "SimplerACEGenerator",
-        # class: type-based
-        # "LSDThinGenerator",
-        # "SLSDThinEqWellLR30Bound10Generator",
-        # "STLC10MGenerator",
-        # "LSDSTLCFastGenerator",
-        # "FastACEGenerator"
-"SBespokeMLENumAppsTarget4321LR1Epochs250Generator",
+        # "SLSDThinGenerator",
 "LBespokeGenerator",
-"BespokeGenerator",
-
+"SBespokeMLENumAppsTarget4321LR1Epochs250Generator",
+        # class: type-based
+        # "TypeBasedGenerator"
+        "SLSDThinGenerator",
+        "SLSDThinSEFreq2SPB200WellTypedLR30Epochs2000Bound10Generator",
     ] 
     # + [
     #     f"{template}May{eq}Bound{bound}Generator"
@@ -75,30 +74,19 @@ ORDER: List[str] = { # Put rows in this order and also assert that these generat
     # ]
     ,
     "RBT": [
-        # "RLSDThinSmallGenerator",
-        # "RLSDThinEqLR30Epochs2000Bound10SPB200Generator",
-        # "RLSDThinEqValidLR30Epochs2000Bound10SPB200Generator",
-        # "LSDRBTFastGenerator"
-
-# "UntunedGenerator",
-# "ValidGenerator",
-# "ValidBoundGenerator",
-# "EntropyGenerator",
-# "EntropyBoundGenerator",
-# "SEGenerator",
-# "SEBoundGenerator",
-
-# "RLDSS0ThinSEFreq2SPB200IsRBTLR03Epochs1000Generator",
-# "RLDUntunedGenerator",
-
-"RLDSS0ThinSEFreq2SPB200IsRBTLR03Epochs1000Bound10Generator",
+        # "TypeBasedGenerator",
+        "RLSDThinGenerator",
+        "RLSDThinSEFreq2SPB200IsRBTLR30Epochs2000Bound10Generator",
     ],
 
     "BST": [
+        # "TypeBasedGenerator",
+        "BLSDThinGenerator",
+        "BLSDThinSEFreq2SPB200IsBSTLR30Epochs2000Bound10Generator",
         # "BSmallInitGenerator",
         # "BSmallTrainedGenerator",
         # "TypeBasedGenerator",
-        "LSDBSTFastGenerator"
+        # "LSDBSTFastGenerator"
     ]
 }[WORKLOAD]
 
@@ -168,8 +156,8 @@ Fixpoint toShape (t : Tree) : Shape := match t with
     ),
     "RBT": Workload(
         type="Tree",
-        generator=lambda _:"gSized",
-        # generator=lambda generator: "arbitrary" if "typebased" in generator.lower() else "gSized",
+        # generator=lambda _:"gSized",
+        generator=lambda generator: "arbitrary" if "typebased" in generator.lower() else "gSized",
         invariant_check="isRBT %s",
         metrics=["size", "height"],
         extra_definitions="""
@@ -314,6 +302,11 @@ def collect_unique():
             file.write("\t".join(row) + "\n")
         print(f"Write to {file_path}")
 
+def collect_timings():
+    for generator in get_generators():
+        path = os.path.join(STRAT_DIR, generator)
+        print_timings(path, generator)
+
 def collect_dist():
     # Collect stats
     metric_to_generator_to_counts = defaultdict(lambda: defaultdict(dict))
@@ -359,6 +352,8 @@ def main():
         collect_unique()
     elif mode == Mode.DISTRIBUTIONS:
         collect_dist()
+    elif mode == Mode.TIMINGS:
+        collect_timings()
 
 def read(path):
     with open(path) as f:
@@ -384,12 +379,16 @@ def dump_program(pgrm):
     now = datetime.now().strftime("%Y_%m_%d__%H_%M_%S")
     pgrm_dump = f"/tmp/program{now}.v"
     with open(pgrm_dump, "w") as file:
-        file.write(pgrm)
+        try:
+            file.write(pgrm)
+        except OSError as error: 
+            print(pgrm_dump)
+            raise error
     print(f"Wrote program to {pgrm_dump}")
 
 def run_coq(pgrm):
     os.chdir(COQ_PROJECT_DIR)
-    cmd = ["coqtop", "-Q", ".", WORKLOAD]
+    cmd = ["coqtop", "-time", "-Q", ".", WORKLOAD]
     p = subprocess.run(
         cmd,
         stdout=subprocess.PIPE,
@@ -472,6 +471,54 @@ def collect_stats(path, generator, metric_to_generator_to_counts):
                     return s[:-1]
                 cts[int(stripquotes(tokens[-1])), valid] = int(tokens[0])
         metric_to_generator_to_counts[metric][generator] = cts
+
+
+def print_timings(path, generator):
+    pgrm = read(path)
+    pgrm += workload.extra_definitions
+    may_fail = workload.is_failing_generator(generator)
+    if may_fail:
+        pgrm += """
+    Definition collect {A : Type} `{_ : Show A}  (f : """ + workload.type + """ -> A)  : Checker :=  
+        forAll """ + workload.generator(generator) + """ (fun (t : option """ + workload.type + """) =>
+          match t with
+          | Some t =>
+            if """ + (workload.invariant_check % "t") + """ then
+                collect (append "valid " (show (f t))) true
+            else
+                collect (append "invalid " (show (f t))) true
+          | None =>
+            collect (append "failure" "") true
+          end)."""
+    else:
+        pgrm += """
+    Definition collect {A : Type} `{_ : Show A} (f : """ + workload.type + """  -> A)  : Checker :=  
+        forAll """ + workload.generator(generator) + """ (fun (t : """ + workload.type + """) =>
+            if """ + (workload.invariant_check % "t") + """ then
+                collect (append "valid " (show (f t))) true
+            else
+                collect (append "invalid " (show (f t))) true
+        ).
+        """
+
+    pgrm += f"""\nExtract Constant Test.defNumTests => "{NUM_TESTS}".\n"""
+
+    metric = workload.metrics[0]
+    pgrm += f"QuickChick (collect {metric}).\n"
+
+    stdout = run_coq(pgrm)
+    # if height is a metric, then there's a line that looks like:
+    # Chars 14724 - 14752 [QuickChick~(collect~height).] 15.703 secs (2.823u,0.227s)
+    lines_matching = [
+        line for line in stdout.split('\n')
+        if f"QuickChick~(collect~{metric})." in line
+    ]
+    assert len(lines_matching) == 1
+    line = lines_matching[0]
+    # extract seconds using regex
+    # print(line)
+    seconds = re.search(r'([\d\.]+) secs', line).group(1)
+    print(f"{generator}: {seconds}")
 
 if __name__ == "__main__":
     main()
