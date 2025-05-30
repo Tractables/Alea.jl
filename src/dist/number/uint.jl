@@ -320,6 +320,40 @@ function prob_equals(x::DistUInt{W}, y::DistUInt{W}) where W
 end
 
 function Base.isless(x::DistUInt{W}, y::DistUInt{W}) where W
+    new_varord = Vector{Union{Nothing,Vector{Flip}}}(undef, W)
+    fill!(new_varord, nothing)
+
+    # println("\n ---------\n IN ISLESS")
+    # println("X variable ordering: ")
+    # for v in x.variable_ordering
+    #     println("\t", v)
+    # end
+    # println("Y variable ordering: ")
+    # for v in y.variable_ordering
+    #     println("\t", v)
+    # end
+
+    # Interleave variable orderings of x and y
+    for (i, (xvo, yvo)) in enumerate(zip(x.variable_ordering, y.variable_ordering))
+        buf = Flip[]                       # collect non‐nothing flips
+        if xvo !== nothing
+            append!(buf, xvo)             # add x’s flips
+        end
+        if yvo !== nothing
+            append!(buf, yvo)             # add y’s flips
+        end
+        # If not 'nothing', add to new_varord
+        new_varord[i] = isempty(buf) ? nothing : buf
+    end
+
+    # for (i,b) in enumerate(new_varord)
+    #     println("varord[$i] = ", b===nothing ? "nothing" : b)
+    # end
+
+    # Update 'ordering' values for flips in x and y 
+    reassign_orderings(new_varord, x, y)
+
+    # Actual isless logic 
     foldr(zip(x.bits,y.bits); init=false) do (xbit, ybit), tail_isless
         (xbit < ybit) | prob_equals(xbit,ybit) & tail_isless
     end
