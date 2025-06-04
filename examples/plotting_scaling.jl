@@ -9,7 +9,7 @@ indices = Int[]
 times_ns = Float64[]
 
 
-for i in 25:30       # too long past 23 for ordering by global_id
+for i in 1:30       # too long past 23 for ordering by global_id
     a = uniform(DistUInt{i + 1}, i)
     b = uniform(DistUInt{i + 1}, i)
 
