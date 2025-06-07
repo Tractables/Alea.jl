@@ -16,6 +16,9 @@ julia --project -e 'using Pkg; Pkg.add("Random")'
 julia --project -e 'using Pkg; Pkg.add("JLD2")'
 ```
 
+numpy pandas matplotlib
+
+
 ```
 julia --project
 ]
