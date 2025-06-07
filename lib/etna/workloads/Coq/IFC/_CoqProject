@@ -22,12 +22,12 @@ Src/SSNI.v
 Src/NotionsOfNI.v
 #Driver.v -- run `make tests` for this
 Strategies/BespokeGenerator.v
-Strategies/ManualTypeBasedGenerator.v
 Strategies/TypeBasedGenerator.v
-Strategies/VariationalFuzzer.v
+Strategies/ManualTypeBasedGenerator.v
 Strategies/TypeBasedFuzzer.v
+Strategies/VariationalFuzzer.v
 Runners/BespokeGenerator_test_runner.v
-Runners/ManualTypeBasedGenerator_test_runner.v
 Runners/TypeBasedGenerator_test_runner.v
-Runners/VariationalFuzzer_test_runner.v
+Runners/ManualTypeBasedGenerator_test_runner.v
 Runners/TypeBasedFuzzer_test_runner.v
+Runners/VariationalFuzzer_test_runner.v
