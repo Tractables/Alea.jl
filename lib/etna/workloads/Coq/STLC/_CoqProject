@@ -1,11 +1,15 @@
 -Q . STLC
 Src/Impl.v
 Src/Spec.v
+Strategies/STLCBespokeInitialGenerator.v
 Strategies/BespokeGenerator.v
+Strategies/STLCTypeBasedTrainedGenerator.v
 Strategies/TypeBasedGenerator.v
-Runners/STLCTypeBasedTrainedGenerator_test_runner.v
-Runners/STLCBespokeTrainedGenerator_test_runner.v
-Runners/TypeBasedGenerator_test_runner.v
-Runners/STLCTypeBasedInitialGenerator_test_runner.v
-Runners/BespokeGenerator_test_runner.v
+Strategies/STLCBespokeTrainedGenerator.v
+Strategies/STLCTypeBasedInitialGenerator.v
 Runners/STLCBespokeInitialGenerator_test_runner.v
+Runners/BespokeGenerator_test_runner.v
+Runners/STLCTypeBasedTrainedGenerator_test_runner.v
+Runners/TypeBasedGenerator_test_runner.v
+Runners/STLCBespokeTrainedGenerator_test_runner.v
+Runners/STLCTypeBasedInitialGenerator_test_runner.v

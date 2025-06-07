@@ -2,4 +2,8 @@
 Src/Impl.v
 Src/Spec.v
 Strategies/TypeBasedGenerator.v
+Strategies/RBTTypeBasedInitialGenerator.v
+Strategies/RBTTypeBasedTrainedGenerator.v
 Runners/TypeBasedGenerator_test_runner.v
+Runners/RBTTypeBasedInitialGenerator_test_runner.v
+Runners/RBTTypeBasedTrainedGenerator_test_runner.v

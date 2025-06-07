@@ -1,4 +1,4 @@
-From RBT Require Import TypeBasedGenerator.
+From RBT Require Import RBTTypeBasedInitialGenerator.
 From QuickChick Require Import QuickChick.
 Set Warnings "-extraction-opaque-accessed,-extraction".
 Axiom num_tests : nat. Extract Constant num_tests => "100_000".
@@ -16,4 +16,4 @@ let () =
   Sys.argv.(1) |> qctest_map
 ".
 
-Extraction "TypeBasedGenerator_test_runner.ml" qctest_test_prop_True qctest_map.
+Extraction "RBTTypeBasedInitialGenerator_test_runner.ml" qctest_test_prop_True qctest_map.

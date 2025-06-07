@@ -410,10 +410,10 @@ let () =
         with open(f"{workload.path}/_CoqProject", "r") as coq_project_file_reader:
             coq_project_file_contents = coq_project_file_reader.read().splitlines()
 
-        print(generators)
+        # print(generators)
         with open(f"{workload.path}/_CoqProject", "w") as coq_project_file_writer:
-            print("==========")
-            print(coq_project_file_contents)
+            # print("==========")
+            # print(coq_project_file_contents)
 
             l = ""
             for coq_project_file_line in coq_project_file_contents:
@@ -434,4 +434,4 @@ let () =
                 s = f"{RUNNERS_DIR}/{strategy}_test_runner.v\n"
                 l += s
                 coq_project_file_writer.write(s)
-            print(l)
+            # print(l)

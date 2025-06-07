@@ -217,4 +217,4 @@ class BenchTool(ABC):
         '''
         Takes a workload and does the required preprocessing.
         '''
-        pass
+        raise NotImplementedError("Preprocessing not implemented")

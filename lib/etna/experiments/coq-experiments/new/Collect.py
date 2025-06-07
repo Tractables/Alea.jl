@@ -1,6 +1,14 @@
 import argparse
 import json
 import os
+import sys
+
+# Get the directory of the current script.
+script_dir = os.path.dirname(os.path.realpath(__file__))
+# Construct the path to the 'tool' directory, which is three levels up from the script's directory.
+tool_path = os.path.abspath(os.path.join(script_dir, '..', '..', '..', 'tool'))
+# Prepend the 'tool' directory to sys.path to ensure our local 'benchtool' is imported.
+sys.path.insert(0, tool_path)
 
 from benchtool.Coq import Coq
 from benchtool.Types import TrialConfig, ReplaceLevel
@@ -10,9 +18,9 @@ def collect(results: str):
     tool = Coq(results=results, replace_level=ReplaceLevel.SKIP)
 
     for workload in tool.all_workloads():
-        if workload.name not in ['STLC']:
-            continue
+        print(f"\033[91m{workload.name}\033[0m")
 
+        print(f"\033[91m preprocessing {workload.name}\033[0m")
         tool._preprocess(workload)
 
         tasks_json = json.load(open(f'experiments/coq-experiments/5.1/{workload.name}_tasks.json'))
@@ -24,30 +32,30 @@ def collect(results: str):
 
             run_trial = None
 
-            target_strategies = [
-                # "TypeBasedGenerator",
-                # "STLCTypeBasedInitialGenerator",
-                # "STLCTypeBasedTrainedGenerator",
-                "BespokeGenerator",
-                "STLCBespokeInitialGenerator",
-                "STLCBespokeTrainedGenerator",
-            ]
-            for s in target_strategies:
-                if not any(
-                    strategy.name == s
-                    for strategy in tool.all_strategies(workload)
-                ):
-                    print(f"Missing strategy {s}")
-                    print(tool.all_strategies(workload))
-                    exit(1)
+            # target_strategies = [
+            #     "TypeBasedGenerator",
+            #     "STLCTypeBasedInitialGenerator",
+            #     "STLCTypeBasedTrainedGenerator",
+            #     "BespokeGenerator",
+            #     "STLCBespokeInitialGenerator",
+            #     "STLCBespokeTrainedGenerator",
+            # ]
+            # for s in target_strategies:
+            #     if not any(
+            #         strategy.name == s
+            #         for strategy in tool.all_strategies(workload)
+            #     ):
+            #         print(f"Missing strategy {s}")
+            #         print(tool.all_strategies(workload))
+            #         exit(1)
 
             SKIP = True
+            # for strategy in tool.all_strategies(workload):
+            #     if SKIP and strategy.name not in target_strategies:
+            #         print(f"Skipping {strategy.name}")
             for strategy in tool.all_strategies(workload):
-                if SKIP and strategy.name not in target_strategies:
-                    print(f"Skipping {strategy.name}")
-            for strategy in tool.all_strategies(workload):
-                if SKIP and strategy.name not in target_strategies:
-                    continue
+                # if SKIP and strategy.name not in target_strategies:
+                #     continue
 
                 for property in tool.all_properties(workload):
                     property = 'test_' + property
