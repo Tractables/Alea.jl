@@ -28,7 +28,7 @@ def run_process_trial(trial_func: Callable, cfg: TrialConfig) -> None:
 def collect(results: str):
     tool = Coq(results=results, replace_level=ReplaceLevel.SKIP)
 
-    for workload in tool.all_workloads():
+    for workload in ["BST", "RBT", "STLC"]:
         print(f"\033[91m{workload.name}\033[0m")
 
         print(f"\033[91m preprocessing {workload.name}\033[0m")
