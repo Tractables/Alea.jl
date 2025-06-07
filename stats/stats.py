@@ -16,13 +16,14 @@ parser = ArgumentParser(prog='stats.py', formatter_class=RawTextHelpFormatter)
 
 parser.add_argument(
     'mode',
-    choices=["u", "us", "d", "t"],
+    choices=["u", "us", "d", "t", "r"],
     metavar="MODE",
     help="One of:" +
     "\n    u: Unique over time" +
     "\n    t: Just time how long to get samples."
     "\n    us: Unique shapes over time." +
-    "\n    d: Distributions of metrics."
+    "\n    d: Distributions of metrics." +
+    "\n    r: Rejection rate"
 )
 parser.add_argument(
     'workload',
@@ -42,12 +43,14 @@ class Mode(Enum):
     UNIQUE_SHAPES = auto()
     DISTRIBUTIONS = auto()
     TIMINGS = auto()
+    REJECTION_RATE = auto()
 
 MODE_OPTIONS = {
     "u": Mode.UNIQUE,
     "us": Mode.UNIQUE_SHAPES,
     "d": Mode.DISTRIBUTIONS,
     "t": Mode.TIMINGS,
+    "r": Mode.REJECTION_RATE,
 }
 
 mode = MODE_OPTIONS[args.mode]
@@ -57,12 +60,11 @@ NUM_TESTS = int(args.N)
 ORDER: List[str] = { # Put rows in this order and also assert that these generators exist
     "STLC": [
         # class: bespoke
-        # "BespokeGenerator",
-        # "SLSDThinGenerator",
+        "BespokeGenerator",
 "LBespokeGenerator",
 "SBespokeMLENumAppsTarget4321LR1Epochs250Generator",
         # class: type-based
-        # "TypeBasedGenerator"
+        "TypeBasedGenerator",
         "SLSDThinGenerator",
         "SLSDThinSEFreq2SPB200WellTypedLR30Epochs2000Bound10Generator",
     ] 
@@ -74,19 +76,15 @@ ORDER: List[str] = { # Put rows in this order and also assert that these generat
     # ]
     ,
     "RBT": [
-        # "TypeBasedGenerator",
+        "TypeBasedGenerator",
         "RLSDThinGenerator",
         "RLSDThinSEFreq2SPB200IsRBTLR30Epochs2000Bound10Generator",
     ],
 
     "BST": [
-        # "TypeBasedGenerator",
+        "TypeBasedGenerator",
         "BLSDThinGenerator",
         "BLSDThinSEFreq2SPB200IsBSTLR30Epochs2000Bound10Generator",
-        # "BSmallInitGenerator",
-        # "BSmallTrainedGenerator",
-        # "TypeBasedGenerator",
-        # "LSDBSTFastGenerator"
     ]
 }[WORKLOAD]
 
@@ -222,6 +220,9 @@ def collect_unique():
         limit = 500
         print(limit)
 
+        metric = "size"
+        # metric = "num_apps" if WORKLOAD == "STLC" else "height" 
+
         may_fail = workload.is_failing_generator(generator)
         while len(samples) < NUM_TESTS:
             n_now = min(limit, 50 * (NUM_TESTS - len(samples)))
@@ -234,7 +235,7 @@ def collect_unique():
                 | None => None
                 | Some t =>
                     (if """ + (workload.invariant_check % "t") + f""" then
-                        Some (height {t_to_id}, {t_to_id})
+                        Some ({metric} {t_to_id}, {t_to_id})
                     else
                         None)
                 end)
@@ -244,7 +245,7 @@ def collect_unique():
                 gShapes = f"""Definition gShapes :=
               bindGen (vectorOf numSamples (bindGen {workload.generator(generator)} (fun t => returnGen
                 (if """ + (workload.invariant_check % "t") + f""" then
-                    Some (height {t_to_id}, {t_to_id})
+                    Some ({metric} {t_to_id}, {t_to_id})
                 else
                     None)
               ))) (fun samples =>
@@ -295,7 +296,7 @@ def collect_unique():
 
     # Output stats
     os.makedirs(OUT_DIR, exist_ok=True)
-    file_path = os.path.join(OUT_DIR, f"{WORKLOAD}-{NUM_TESTS}.csv")
+    file_path = os.path.join(OUT_DIR, f"{WORKLOAD}-{metric}-{NUM_TESTS}.csv")
     rows = list(map(list, zip(*cols)))
     with open(file_path, "w") as file:
         for row in rows:
@@ -347,6 +348,29 @@ def collect_dist():
                 file.write('\t'.join(tokens) + "\n")
         print(f"Write to {file_path}")
 
+
+def collect_rejection_rate():
+    # Collect stats
+    metric_to_generator_to_counts = defaultdict(lambda: defaultdict(dict))
+    for generator in get_generators():
+        path = os.path.join(STRAT_DIR, generator)
+        print(f"Collecting stats for {generator}")
+        collect_stats(path, generator, metric_to_generator_to_counts)
+    
+        metric = workload.metrics[0]
+        counts = metric_to_generator_to_counts[metric][generator]
+        # print(counts)
+        pct_valid = sum(
+            count
+            for (n, valid), count in counts.items()
+            if valid
+        ) / NUM_TESTS
+        print(f"{generator}: {pct_valid}")
+        assert NUM_TESTS == sum(
+            count
+            for (n, valid), count in counts.items()
+        ), f"{NUM_TESTS} != {sum( count for (n, valid), count in counts.items())}"
+
 def main():
     if mode == Mode.UNIQUE_SHAPES or mode == Mode.UNIQUE:
         collect_unique()
@@ -354,6 +378,10 @@ def main():
         collect_dist()
     elif mode == Mode.TIMINGS:
         collect_timings()
+    elif mode == Mode.REJECTION_RATE:
+        collect_rejection_rate()
+    else:
+        raise NotImplementedError(mode)
 
 def read(path):
     with open(path) as f:
@@ -455,6 +483,7 @@ def collect_stats(path, generator, metric_to_generator_to_counts):
     stdout = run_coq(pgrm)
     for metric in workload.metrics:
         cts = {}
+        # print(stdout)
         for line in lines_between(stdout, f"QuickChecking (collect {metric})", "+++"):
             tokens = line.split(' ')
             if "None" in tokens:
@@ -505,6 +534,10 @@ def print_timings(path, generator):
 
     metric = workload.metrics[0]
     pgrm += f"QuickChick (collect {metric}).\n"
+
+    if PROGRAM_ONLY:
+        dump_program(pgrm)
+        return
 
     stdout = run_coq(pgrm)
     # if height is a metric, then there's a line that looks like:
