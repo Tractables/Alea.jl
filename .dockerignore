@@ -1,0 +1,6 @@
+.git
+artifact-venv/
+.idea/
+*.pyc
+__pycache__/
+.DS_Store

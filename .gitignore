@@ -1,0 +1,7 @@
+.venv/
+artifact-venv/
+.idea/
+*.pyc
+__pycache__/
+.DS_Store
+.mypy_cache/

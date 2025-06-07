@@ -1,8 +1,17 @@
 # Artifact for Tuning Random Generators
 
+## Instructions (Docker)
+
+Run
+```
+docker build -t artifact .
+```
+
 ## Instructions
 
 ### Setup
+
+Install Julia 1.10.
 
 ```
 julia --project -e 'using Pkg; Pkg.develop(path="lib/IRTools.jl")'
@@ -16,7 +25,11 @@ julia --project -e 'using Pkg; Pkg.add("Random")'
 julia --project -e 'using Pkg; Pkg.add("JLD2")'
 ```
 
-numpy pandas matplotlib
+Setup python.
+(install, numpy pandas matplotlib.)
+
+
+julia --project experiments/tool.jl -f "LangDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],0,3,true)" "Pair{MLELossConfig{RBT},Float64}[MLELossConfig{RBT}(depth,Uniform())=>0.3]" 100 0.0 -l
 
 
 ```
