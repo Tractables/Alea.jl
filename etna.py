@@ -5,6 +5,8 @@ import os
 import shutil
 import subprocess
 import sys
+from datetime import datetime
+
 # notes for later:
 # opam setups
 # opam switch create 4.10.0+afl
@@ -30,7 +32,8 @@ def copy_generators():
         for generator in generators:
             destination_path = os.path.join(destination_dir, workload, "Strategies", generator)
             if os.path.exists(destination_path):
-                print(f"Generator {generator} already exists in {destination_path}")
+                if args.verbose:
+                    print(f"Generator {generator} already exists in {destination_path}")
                 continue
 
             # if generator doesn't exist, error
@@ -39,12 +42,20 @@ def copy_generators():
 
             shutil.copy2(os.path.join(source_dir, generator), os.path.join(destination_dir, workload, "Strategies", generator))
 
-def run_command(command: str, cwd: str = None):
+def run_command(command: str, log_file: str, cwd: str = None):
     if args.verbose:
         # print command in color
         print(f"\033[94m{command}\033[0m")
-    
-    result = subprocess.run(command, shell=True, cwd=cwd)
+
+    if log_file:
+        with open(log_file, "a") as f:
+            f.write(f"--------------------------------\n")
+            f.write(f"{command}\n")
+
+    # pipe stdout and stderr to the log file
+    # log file is a string, so we need to open it in append mode    
+    with open(log_file, "a") as f:
+        result = subprocess.run(command, shell=True, cwd=cwd, stdout=f, stderr=f)
 
     if result.returncode != 0:
         print(f"Failed to run {command}")
@@ -52,18 +63,27 @@ def run_command(command: str, cwd: str = None):
 
 def run_etna(args: argparse.Namespace):
     etna_dir = "lib/etna"
-    run_command("python3 qc-checker.py use_new_qc", cwd=etna_dir)
-    run_command("python3 bounds-switch.py to_max", cwd=etna_dir)
+
+    # log all command outputs in this directory to `log/<date>-<time>.log`
+    # (create if doesn't exist)
+    log_file = os.path.join("log", f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.log")
+    os.makedirs("log", exist_ok=True)
+
+    if args.verbose:
+        print(f"Logging to {log_file}")
+
+    run_command("python3 qc-checker.py use_new_qc", cwd=etna_dir, log_file=log_file)
+    run_command("python3 bounds-switch.py to_max", cwd=etna_dir, log_file=log_file)
 
 
-    run_command("python3 experiments/coq-experiments/new/Collect.py --data=data-artifact", cwd=etna_dir)
+    run_command("python3 experiments/coq-experiments/new/Collect.py --data=data-artifact", cwd=etna_dir, log_file=log_file)
 
     # from lib/etna/workloads/Coq/<workload>, run coq_makefile -f _CoqProject -o Makefile && make
     for workload in workload_to_generators.keys():
         workload_dir = os.path.join(etna_dir, "workloads", "Coq", workload)
-        run_command("coq_makefile -f _CoqProject -o Makefile && make", cwd=workload_dir)
+        run_command("coq_makefile -f _CoqProject -o Makefile && make", cwd=workload_dir, log_file=log_file)
 
-    run_command("python3 experiments/coq-experiments/new/Collect.py --data=data-artifact", cwd=etna_dir)
+    run_command("python3 experiments/coq-experiments/new/Collect.py --data=data-artifact", cwd=etna_dir, log_file=log_file)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
