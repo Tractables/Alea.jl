@@ -2,6 +2,8 @@ import argparse
 import json
 import os
 import sys
+import multiprocessing
+from typing import Callable
 
 # Get the directory of the current script.
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -13,6 +15,15 @@ sys.path.insert(0, tool_path)
 from benchtool.Coq import Coq
 from benchtool.Types import TrialConfig, ReplaceLevel
 
+
+def run_process_trial(trial_func: Callable, cfg: TrialConfig) -> None:
+    """Run a trial in a separate process."""
+    try:
+        result = trial_func(cfg)
+        return result
+    except Exception as e:
+        print(f"Error in process running trial: {e}")
+        raise
 
 def collect(results: str):
     tool = Coq(results=results, replace_level=ReplaceLevel.SKIP)
@@ -57,6 +68,7 @@ def collect(results: str):
                 # if SKIP and strategy.name not in target_strategies:
                 #     continue
 
+                processes = []
                 for property in tool.all_properties(workload):
                     property = 'test_' + property
                     if tasks_json['tasks'] and property not in tasks_json['tasks'][variant.name]:
@@ -77,7 +89,18 @@ def collect(results: str):
                                       trials=11,
                                       timeout=60,
                                       short_circuit=False)
-                    run_trial(cfg)
+                    
+                    p = multiprocessing.Process(
+                        target=run_process_trial,
+                        args=(run_trial, cfg)
+                    )
+                    processes.append(p)
+                    p.start()
+
+                # Wait for all processes to complete
+                for p in processes:
+                    p.join()
+                print(f"All trials completed for workload={workload.name}, variant={variant.name}, strategy={strategy.name}")
 
 
 if __name__ == '__main__':
