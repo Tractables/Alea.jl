@@ -42,6 +42,40 @@ def copy_generators():
 
             shutil.copy2(os.path.join(source_dir, generator), os.path.join(destination_dir, workload, "Strategies", generator))
 
+def copy_results():
+    # Create experiments-output directory if it doesn't exist
+    os.makedirs("experiments-output", exist_ok=True)
+
+    # Copy type-based generator time plots
+    shutil.copy("lib/etna/figures-artifact/bst_type_based_times.png", "experiments-output/fig11a_bst_type_based_times.png")
+    shutil.copy("lib/etna/figures-artifact/rbt_type_based_times.png", "experiments-output/fig11b_rbt_type_based_times.png")
+    shutil.copy("lib/etna/figures-artifact/stlc_type_based_times.png", "experiments-output/fig11c_stlc_type_based_times.png")
+    
+    # Copy bespoke generator time plot
+    shutil.copy("lib/etna/figures-artifact/stlc_bespoke_times.png", "experiments-output/fig12a_stlc_bespoke_times.png")
+
+    # Create table1.txt with speedup information
+    with open("lib/etna/figures-artifact/bst_type_based_speedups.txt") as f:
+        bst_speedups = f.read().strip()
+    with open("lib/etna/figures-artifact/rbt_type_based_speedups.txt") as f:
+        rbt_speedups = f.read().strip()
+    with open("lib/etna/figures-artifact/stlc_type_based_speedups.txt") as f:
+        stlc_type_speedups = f.read().strip()
+    with open("lib/etna/figures-artifact/stlc_bespoke_speedups.txt") as f:
+        stlc_bespoke_speedups = f.read().strip()
+
+    table_content = f"""BST-Type Based:
+{bst_speedups}
+RBT-Type Based:
+{rbt_speedups}
+STLC-Type Based:
+{stlc_type_speedups}
+STLC-Bespoke:
+{stlc_bespoke_speedups}"""
+
+    with open("experiments-output/table1.txt", "w") as f:
+        f.write(table_content)
+
 def run_command(command: str, log_file: str, cwd: str = None):
     if args.verbose:
         # print command in color
@@ -84,10 +118,10 @@ def run_etna(args: argparse.Namespace):
 
     # from lib/etna/workloads/Coq/<workload>, run coq_makefile -f _CoqProject -o Makefile && make
     # run_command("python3 experiments/coq-experiments/new/Collect.py --data=data-artifact", cwd=etna_dir, log_file=log_file)
-    for workload in workload_to_generators.keys():
-        workload_dir = os.path.join(etna_dir, "workloads", "Coq", workload)
-        run_command("coq_makefile -f _CoqProject -o Makefile && make", cwd=workload_dir, log_file=log_file)
-    run_command("python3 experiments/coq-experiments/new/Collect.py --data=data-artifact", cwd=etna_dir, log_file=log_file)
+    # for workload in workload_to_generators.keys():
+    #     workload_dir = os.path.join(etna_dir, "workloads", "Coq", workload)
+    #     run_command("coq_makefile -f _CoqProject -o Makefile && make", cwd=workload_dir, log_file=log_file)
+    # run_command("python3 experiments/coq-experiments/new/Collect.py --data=data-artifact", cwd=etna_dir, log_file=log_file)
 
     run_command("python3 experiments/coq-experiments/new/Analysis.py --data=data-artifact --figures=figures-artifact", cwd=etna_dir, log_file=log_file)
 
@@ -97,3 +131,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     copy_generators()
     run_etna(args)
+    copy_results()

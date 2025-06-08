@@ -28,10 +28,13 @@ def run_process_trial(trial_func: Callable, cfg: TrialConfig) -> None:
 def collect(results: str):
     tool = Coq(results=results, replace_level=ReplaceLevel.SKIP)
 
-    for workload in ["BST", "RBT", "STLC"]:
+    # for workload in ["BST", "RBT", "STLC"]:
+    for workload in tool.all_workloads():
+        if workload.name not in ["BST", "RBT", "STLC"]:
+            continue
         print(f"\033[91m{workload.name}\033[0m")
 
-        print(f"\033[91m preprocessing {workload.name}\033[0m")
+        # print(f"\033[91m preprocessing {workload.name}\033[0m")
         tool._preprocess(workload)
 
         tasks_json = json.load(open(f'experiments/coq-experiments/5.1/{workload.name}_tasks.json'))

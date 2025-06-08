@@ -110,7 +110,8 @@ def stacked_barchart_times(
     strategy_to_times = {}
     strategy_to_task_to_time = defaultdict(dict)
     for (strategy, df_strat) in df.groupby('strategy'):
-        assert strategy in [g.filename.replace('.v', '') for g in chart.generators]
+        if strategy not in [g.filename.replace('.v', '') for g in chart.generators]:
+            continue
             
         times = []
 
@@ -150,12 +151,12 @@ def stacked_barchart_times(
 
 
     strategy_to_generator = {g.filename.replace('.v', ''): g for g in chart.generators}
-    with open(f"{image_path}/{case}-speedups.txt", "w") as f:
+    with open(f"{image_path}/{case}_speedups.txt", "w") as f:
         for generator in chart.generators:
             if generator.is_baseline:
                 continue
             for baseline_generator in chart.generators:
-                if baseline_generator.is_baseline:
+                if not baseline_generator.is_baseline:
                     continue
                 speedups = []
                 for task, baseline_time in strategy_to_task_to_time[baseline_generator.filename.replace('.v', '')].items():
@@ -179,9 +180,6 @@ def stacked_barchart_times(
     sns.set_style("whitegrid",{'font.family':'serif', 'font.serif':'Times New Roman', 'axes.edgecolor': 'white','grid.color': '#DCDCDC'})
     # https://seaborn.pydata.org/tutorial/color_palettes.html#using-categorical-color-brewer-palettes
 
-    palette = sns.color_palette("tab10")
-    reordered = [palette[i] for i in [0, 2, 1, 3]]
-    sns.set_palette(reordered, 4)
 
     # set2 = [
     #     (0.9882352941176471, 0.5529411764705883, 0.3843137254901961), # 2
@@ -209,10 +207,11 @@ def stacked_barchart_times(
     #     )
     #     plt.setp(ax.lines, alpha=.3)
     #     plt.setp(ax.collections, alpha=.3)
-    
+
     # via a dataframe
     plt.clf()
     data = []
+
 
     strategy_to_xs_ys = {}
     for strategy, times in strategy_to_times.items():
@@ -226,6 +225,11 @@ def stacked_barchart_times(
                 "# bugs found": b,
                 "Strategy": generator.name,
             })
+
+    teal, blue, red = 'teal', '#1E88E5', '#FF3333'
+    reordered = [teal, red, blue]
+    sns.set_palette(reordered, 3)
+
     df = pd.DataFrame(data)
     ax = sns.lineplot(
         data=df,
@@ -233,6 +237,7 @@ def stacked_barchart_times(
         y="# bugs found",
         hue="Strategy",
         style="Strategy",
+        dashes=[(2,2), (),()] ,  # dashed, solid, solid
         # alpha=0.7,
         linewidth=4,
     )
@@ -240,9 +245,9 @@ def stacked_barchart_times(
 
     plt.gca().set_ylim(bottom=num_found_by_all_in_cutoff,top=max_found + 1)
     plt.legend(title='Strategy', loc='lower right')
-    plt.savefig(f"{image_path}/{case}-med-times.svg")
+    plt.savefig(f"{image_path}/{case}_times.png")
 
-    with open(f"{image_path}/{case}-lines.csv", "w") as f:
+    with open(f"{image_path}/{case}_lines.csv", "w") as f:
         tab = '\t'
         f.write(tab.join(f"{strategy}x\t{strategy}y" for strategy in strategies))
         cols = []
