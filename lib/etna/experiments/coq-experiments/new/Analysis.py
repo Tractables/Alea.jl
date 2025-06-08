@@ -4,6 +4,48 @@ from benchtool.Plot import *
 from functools import partial
 
 
+workload_to_charts = {
+    "BST": [
+        Chart(
+            name="BST Type-Based",
+            generators=(
+                Generator(filename="TypeBasedGenerator.v", name="Etna", is_baseline=True),
+                Generator(filename="BSTTypeBasedInitialGenerator.v", name="Initial", is_baseline=True),
+                Generator(filename="BSTTypeBasedTrainedGenerator.v", name="Trained", is_baseline=False),
+            )
+        ),
+    ],
+    "RBT": [
+        Chart(
+            name="RBT Type-Based",
+            generators=(
+                Generator(filename="TypeBasedGenerator.v", name="Etna", is_baseline=True),
+                Generator(filename="RBTTypeBasedInitialGenerator.v", name="Initial", is_baseline=True),
+                Generator(filename="RBTTypeBasedTrainedGenerator.v", name="Trained", is_baseline=False),
+            )
+        ),
+    ],
+    "STLC": [
+        Chart(
+            name="STLC Type-Based",
+            generators=(
+                Generator(filename="TypeBasedGenerator.v", name="Etna", is_baseline=True),
+                Generator(filename="STLCTypeBasedInitialGenerator.v", name="Initial", is_baseline=True),
+                Generator(filename="STLCTypeBasedTrainedGenerator.v", name="Trained", is_baseline=False),
+            )
+        ),
+        Chart(
+            name="STLC Bespoke",
+            generators=(
+                Generator(filename="BespokeGenerator.v", name="Etna", is_baseline=True),
+                Generator(filename="STLCBespokeInitialGenerator.v", name="Initial", is_baseline=True),
+                Generator(filename="STLCBespokeTrainedGenerator.v", name="Trained", is_baseline=False),
+            )
+        ),
+    ],
+}
+
+
 def analyze(results: str, images: str):
     df = parse_results(results)
 
@@ -12,23 +54,17 @@ def analyze(results: str, images: str):
 
     # Generate task bucket charts used in Figure 3.
 
-    strategies = [
-        # "TypeBasedGenerator",
-        # "STLCTypeBasedInitialGenerator",
-        # "STLCTypeBasedTrainedGenerator",
-        "BespokeGenerator",
-        "STLCBespokeInitialGenerator",
-        "STLCBespokeTrainedGenerator",
-    ]
-    for workload in ['STLC']:
-        times = partial(stacked_barchart_times, case=workload, df=df)
-        times(
-            strategies=strategies,
-            limits=[0.1, 1, 10, 60],
-            limit_type='time',
-            image_path=images,
-            show=False,
-        )
+    for workload, charts in workload_to_charts.items():
+        times = partial(stacked_barchart_times, df=df)
+        for chart in charts:
+            times(
+                chart=chart,
+                limits=[0.1, 1, 10, 60],
+                limit_type='time',
+                image_path=images,
+                show=False,
+                workload=workload,
+            )
 
 
 if __name__ == "__main__":

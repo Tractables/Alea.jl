@@ -27,6 +27,10 @@ julia --project -e 'using Pkg; Pkg.add("JLD2")'
 
 Setup python.
 (install, numpy pandas matplotlib.)
+pandas 1.5.3
+
+install benchtool:
+cd lib/etna/tool && pip install -e .
 
 
 julia --project experiments/tool.jl -f "LangDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],0,3,true)" "Pair{MLELossConfig{RBT},Float64}[MLELossConfig{RBT}(depth,Uniform())=>0.3]" 100 0.0 -l

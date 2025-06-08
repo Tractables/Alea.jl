@@ -53,9 +53,14 @@ def run_command(command: str, log_file: str, cwd: str = None):
             f.write(f"{command}\n")
 
     # pipe stdout and stderr to the log file
+    debug = True
+    # if debug is true, also forward stdout and stderr to the terminal
     # log file is a string, so we need to open it in append mode    
-    with open(log_file, "a") as f:
-        result = subprocess.run(command, shell=True, cwd=cwd, stdout=f, stderr=f)
+    if debug:
+        result = subprocess.run(command, shell=True, cwd=cwd)
+    else:
+        with open(log_file, "a") as f:
+            result = subprocess.run(command, shell=True, cwd=cwd, stdout=f, stderr=f)
 
     if result.returncode != 0:
         print(f"Failed to run {command}")
@@ -76,14 +81,15 @@ def run_etna(args: argparse.Namespace):
     run_command("python3 bounds-switch.py to_max", cwd=etna_dir, log_file=log_file)
 
 
-    run_command("python3 experiments/coq-experiments/new/Collect.py --data=data-artifact", cwd=etna_dir, log_file=log_file)
 
     # from lib/etna/workloads/Coq/<workload>, run coq_makefile -f _CoqProject -o Makefile && make
+    # run_command("python3 experiments/coq-experiments/new/Collect.py --data=data-artifact", cwd=etna_dir, log_file=log_file)
     for workload in workload_to_generators.keys():
         workload_dir = os.path.join(etna_dir, "workloads", "Coq", workload)
         run_command("coq_makefile -f _CoqProject -o Makefile && make", cwd=workload_dir, log_file=log_file)
-
     run_command("python3 experiments/coq-experiments/new/Collect.py --data=data-artifact", cwd=etna_dir, log_file=log_file)
+
+    run_command("python3 experiments/coq-experiments/new/Analysis.py --data=data-artifact --figures=figures-artifact", cwd=etna_dir, log_file=log_file)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

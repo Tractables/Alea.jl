@@ -13,7 +13,18 @@ from typing import Literal, Optional
 import seaborn as sns
 import matplotlib.pyplot as plt
 import bisect
+from dataclasses import dataclass
 
+@dataclass(frozen=True)
+class Generator:
+    filename: str
+    name: str
+    is_baseline: bool
+
+@dataclass(frozen=True)
+class Chart:
+    name: str
+    generators: tuple[Generator]
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -37,35 +48,52 @@ class Bar:
 import code
 
 def stacked_barchart_times(
-    case: str,
     df: pd.DataFrame,
     limits: list[float],
     limit_type: str,
-    strategies: list[str] = None,
+    chart: Chart = None,
     colors: list[str] = None,
     show: bool = True,
     image_path: Optional[str] = None,
     agg: Literal['any', 'all'] = 'all',
     manual_bars: list[Bar] = [],
+    workload: str = None,
 ):
 
-    df = df[df['workload'] == case]
+    print(df['workload'].unique())
+    df = df[df['workload'] == workload]
 
-    if not strategies:
-        strategies = df.strategy.unique()
+    # case is chart name but in snake case
+    case = chart.name.lower().replace(" ", "_").replace("-", "_")
+
+    print("Available workloads in DataFrame:", df['workload'].unique())
+    print("Looking for workload:", workload)
+    print(df.head())
+    
+
+    # if not strategies:
+    #     strategies = df.strategy.unique()
+    strategies = [g.filename for g in chart.generators]
+
+    print("Available strategies in DataFrame:", df.strategy.unique())
+    print("Strategies we're looking for:", [g.filename.replace('.v', '') for g in chart.generators])
 
     tasks = df.task.unique()
     total_tasks = len(tasks)
 
-    results = pd.DataFrame(columns=limits, index=strategies, dtype=int, data=0)
+    strategies_without_v = [g.filename.replace('.v', '') for g in chart.generators]
+    results = pd.DataFrame(columns=limits, index=strategies_without_v, dtype=int, data=0)
 
     results['rest'] = total_tasks
 
     for within in limits:
         dft = overall_solved(df, agg=agg, within=within, solved_type=limit_type)
         dft = dft.reset_index()
+        print("\nGrouped DataFrame strategies:", dft.strategy.unique())
         dft = dft.groupby(['strategy']).sum(numeric_only=False)
-        for strategy in strategies:
+        print("After groupby, available indices:", dft.index.values)
+        for generator in chart.generators:
+            strategy = generator.filename.replace('.v', '')
             # Note: I think the new version of Pandas broke some of this code.
             # Use 1.5.3 for now and come back and fix.
             results.loc[strategy].loc[within] = dft.loc[strategy]['solved'] - (
@@ -82,8 +110,8 @@ def stacked_barchart_times(
     strategy_to_times = {}
     strategy_to_task_to_time = defaultdict(dict)
     for (strategy, df_strat) in df.groupby('strategy'):
-        if strategy not in strategies:
-            continue
+        assert strategy in [g.filename.replace('.v', '') for g in chart.generators]
+            
         times = []
 
         max_trials = max(len(df_task) for (_, df_task) in df_strat.groupby('task'))
@@ -119,67 +147,31 @@ def stacked_barchart_times(
         for times in strategy_to_times.values()
     )
     max_found = max(len(times) for times in strategy_to_times.values())
-    strat_names = {
-        # "BespokeGenerator": "Bespoke generator",
-        # "LBespokeGenerator": "Our bespoke generator with fixed init. sizes (OBG)",
-        # "LBespokeApproxConstructorEntropyGenerator": "OBG tuned for approx. constructor entropy",
-        # "LBespokeACEGenerator": "OBG test tuning",
-        # "S_BespokeACELR03Bound10Generator": "OBG tuned for approx. constructor entropy (bound=0.1)",
-
-        # "TypeBasedGenerator": "QuickChick type-based generator",
-        # "LGenerator": "Our type-based generator (OTBG)",
-        # "LEqGenerator": "OTBG tuned for diverse (w.r.t default equality) valid BSTs",
-        # "LExceptGenerator": "OTBG tuned for diverse (w.r.t. BST structure) valid BSTs",
 
 
-        # "LSDInitGenerator" : "Our type-based generator (OTBG)",
-        # "R_LSDEqBound05Generator": "OTBG tuned for diverse (w.r.t. default equality) valid RBTs (bound=0.05)",
-        # "R_LSDEqBound10Generator": "OTBG tuned for diverse valid RBTs (bound=0.1)",
-
-        # "LSDThinGenerator": "Our type-based generator (OTBG)",
-        # "LSDMayEqBound10Generator": "OTBG tuned for diverse samples",
-
-        # "B_LDGenerator": "Our type-based generator (OTBG)",
-        # "B_LDEqLR30Bound10Generator": "OTBG tuned for diverse valid BSTs (bound=0.1)",
-
-
-# "LDThinInitGenerator": "",
-# "LSDMayEqBound10Generator": "",
-    }
-    def strat_name(strategy):
-        return strat_names.get(strategy, strategy)
-    
-
-    baselines = [
-        "TypeBasedGenerator",
-        "LBespokeGenerator",
-        "BespokeGenerator",
-        "SLSDThinGenerator",
-        "RLSDThinGenerator",
-        "BLSDThinGenerator",
-    ]
+    strategy_to_generator = {g.filename.replace('.v', ''): g for g in chart.generators}
     with open(f"{image_path}/{case}-speedups.txt", "w") as f:
-        for strategy in strategies:
-            if strategy in baselines:
+        for generator in chart.generators:
+            if generator.is_baseline:
                 continue
-            for baseline_strategy in baselines:
-                if baseline_strategy not in strategies:
+            for baseline_generator in chart.generators:
+                if baseline_generator.is_baseline:
                     continue
                 speedups = []
-                for task, baseline_time in strategy_to_task_to_time[baseline_strategy].items():
-                    if task in strategy_to_task_to_time[strategy]:
-                        strat_time = strategy_to_task_to_time[strategy][task]
+                for task, baseline_time in strategy_to_task_to_time[baseline_generator.filename.replace('.v', '')].items():
+                    if task in strategy_to_task_to_time[generator.filename.replace('.v', '')]:
+                        strat_time = strategy_to_task_to_time[generator.filename.replace('.v', '')][task]
                         speedups.append(baseline_time / strat_time)
                 if not speedups:
-                    f.write(f"empty dataset: {strat_name(strategy)} vs {strat_name(baseline_strategy)}\n")
+                    f.write(f"empty dataset: {generator.name} vs {baseline_generator.name}\n")
                 else:
                     avg_speedup = geometric_mean(speedups)
-                    f.write(f"{strat_name(strategy)} is {round(avg_speedup, 1)}x faster than {strat_name(baseline_strategy)}\n")
+                    f.write(f"{generator.name} is {round(avg_speedup, 1)}x faster than {baseline_generator.name}\n")
                 
         f.write("\n\n")
-        for a, b in strat_names.items():
-            if a in strategies:
-                f.write(f"{a} -> {b}\n")
+        # for a, b in strat_names.items():
+        #     if a in strategies:
+        #         f.write(f"{a} -> {b}\n")
             
 
 
@@ -223,10 +215,8 @@ def stacked_barchart_times(
     data = []
 
     strategy_to_xs_ys = {}
-    for strategy, times in sorted(
-        strategy_to_times.items(),
-        key=lambda p: list(strat_names.keys()).index(p[0]) if p[0] in strat_names else 999
-    ):
+    for strategy, times in strategy_to_times.items():
+        generator = strategy_to_generator[strategy]
         time_points = [0] + times + [60]
         bugs_found = [0] + list(range(1, len(times) + 1)) + [len(times)]
         strategy_to_xs_ys[strategy] = time_points, bugs_found
@@ -234,7 +224,7 @@ def stacked_barchart_times(
             data.append({
                 "Time (s)": t,
                 "# bugs found": b,
-                "Strategy": strat_name(strategy),
+                "Strategy": generator.name,
             })
     df = pd.DataFrame(data)
     ax = sns.lineplot(
@@ -256,7 +246,8 @@ def stacked_barchart_times(
         tab = '\t'
         f.write(tab.join(f"{strategy}x\t{strategy}y" for strategy in strategies))
         cols = []
-        for strategy in strategies:
+        for generator in chart.generators:
+            strategy = generator.filename.replace('.v', '')
             xs, ys = strategy_to_xs_ys[strategy]
             cols.append(xs)
             cols.append(ys)
