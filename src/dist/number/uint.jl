@@ -641,6 +641,31 @@ function Base.:~(x::DistUInt{W}) where W
     DistUInt{W}(.! x.bits) 
 end 
 
+function Base.:(==)(x::DistUInt{W}, y::DistUInt{W}) where W   # Done by Jai for 267 Project
+    ensure_varord!(x)
+    ensure_varord!(y)
+
+    # Interleave flip lists for each bit
+    z_varord = Vector{Union{Nothing,Vector{Flip}}}(undef, W)
+    for i in 1:W
+        buf = Flip[]
+        if x.variable_ordering[i] !== nothing
+            append!(buf, x.variable_ordering[i])
+        end
+        if y.variable_ordering[i] !== nothing
+            append!(buf, y.variable_ordering[i])
+        end
+        z_varord[i] = isempty(buf) ? nothing : buf
+    end
+
+    keep_unique_varord_flips(z_varord)
+    reassign_orderings(z_varord, x, y)
+
+    # Compare each bit
+    equal_bits = map(prob_equals, x.bits, y.bits)
+    return reduce(&, equal_bits)
+end
+
 function Base.iszero(x::T) where T <: Dist{<:Number}
     prob_equals(x, zero(T))
 end

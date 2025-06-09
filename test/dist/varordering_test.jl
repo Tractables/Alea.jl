@@ -125,3 +125,63 @@ end
     @test num_nodes(g) == 19
 
 end
+
+
+@testset "VarOrder Interleaving - Comparisons" begin
+
+    b = uniform(DistUInt{3}, 2)
+    c = uniform(DistUInt{3}, 2)
+    d = b < c
+    @test num_nodes(d) == 7
+
+    b = uniform(DistUInt{4}, 3)
+    c = uniform(DistUInt{4}, 3)
+    d = b < c
+    @test num_nodes(d) == 10
+
+    b = uniform(DistUInt{5}, 4)
+    c = uniform(DistUInt{5}, 4)
+    d = b < c
+    @test num_nodes(d) == 13
+
+    b = uniform(DistUInt{6}, 5)
+    c = uniform(DistUInt{6}, 5)
+    d = b < c
+    @test num_nodes(d) == 16
+
+    b = uniform(DistUInt{7}, 6)
+    c = uniform(DistUInt{7}, 6)
+    d = b < c
+    @test num_nodes(d) == 19
+
+    b = uniform(DistUInt{8}, 7)
+    c = uniform(DistUInt{8}, 7)
+    d = b < c
+    @test num_nodes(d) == 22
+
+    b = uniform(DistUInt{10}, 9)
+    c = uniform(DistUInt{10}, 9)
+    d = b < c
+    @test num_nodes(d) == 28
+
+    b = uniform(DistUInt{12}, 11)
+    c = uniform(DistUInt{12}, 11)
+    d = b < c
+    @test num_nodes(d) == 34
+
+    b = uniform(DistUInt{16}, 15)
+    c = uniform(DistUInt{16}, 15)
+    d = b < c
+    @test num_nodes(d) == 46
+
+    b = uniform(DistUInt{20}, 19)
+    c = uniform(DistUInt{20}, 19)
+    d = b < c
+    @test num_nodes(d) == 58
+
+    b = uniform(DistUInt{26}, 25)
+    c = uniform(DistUInt{26}, 25)
+    d = b < c
+    @test num_nodes(d) == 76
+
+end
