@@ -671,74 +671,51 @@ function Base.iszero(x::T) where T <: Dist{<:Number}
 end
 
 function Base.ifelse(cond::Dist{Bool}, then::DistUInt{W}, elze::DistUInt{W}) where W
-    (then == elze) && return then
+    # (then == elze) && return then
 
-    # GOAL of commented code: Flips in 'cond' come before anything else
+    # Put flips in condition before flips in then/else 
 
-    # println("\n In UINT IF ELSE\nInput vals:")
-    # println("\tCondition: \t", cond)
-    # println("\tThen: \n\t\tBITS = ", then.bits)
-    # println("\tElze: \n\t\tBITS = ", elze.bits)
-
-    # # Collect all flips that are part of expression
-    # # In order: condition --> 'then' --> 'elze'
-    # all_flips = Flip[]
+    # Collect all flips that are part of expression
+    # In order: condition --> 'then' --> 'elze'
+    all_flips = Flip[]
 
 
-    # # Get all flips in condition via DFS
-    # cond_flips = extract_flips(cond)
-    # println("\n -- Flips in condition --")
-    # for f in cond_flips
-    #     println(f)
-    # end
-    # println(" ----------- ")
+    # Get all flips in condition via DFS
+    cond_flips = extract_flips(cond)
 
-    # append!(all_flips, cond_flips)
+    append!(all_flips, cond_flips)
 
 
-    # then_varord = then.variable_ordering
-    # elze_varord = elze.variable_ordering
+    then_varord = then.variable_ordering
+    elze_varord = elze.variable_ordering
 
-    # println("'then' VARIABLE ORDERING:")
-    # then_bucket = Flip[]            # start with an empty Vector{Flip}
-    # for v in then_varord
-    #     println("\t", v)
-    #     if v !== nothing
-    #         append!(then_bucket, v)
-    #     end
-    # end
-    # append!(all_flips, then_bucket)
+    then_bucket = Flip[]
+    for v in then_varord
+        println("\t", v)
+        if v !== nothing
+            append!(then_bucket, v)
+        end
+    end
+    append!(all_flips, then_bucket)
 
 
-    # println("'elze' VARIABLE ORDERING:")
-    # elze_bucket = Flip[]
-    # for v in elze_varord
-    #     println("\t", v)
-    #     if v !== nothing
-    #         append!(elze_bucket, v)
-    #     end
-    # end
-    # append!(all_flips, elze_bucket)
+    elze_bucket = Flip[]
+    for v in elze_varord
+        println("\t", v)
+        if v !== nothing
+            append!(elze_bucket, v)
+        end
+    end
+    append!(all_flips, elze_bucket)
 
-    # println("\n ALL FLIPS:")
-    # for b in all_flips
-    #     println("\t", b)
-    # end
+    orderings = [flip.ordering for flip in all_flips]
+    sort!(orderings)
 
-    # orderings = [flip.ordering for flip in all_flips]
-    # sort!(orderings)
-    # println("Possible Orderings: ", orderings)
-
-    # ordering_idx = 1
-    # for flip in all_flips
-    #     flip.ordering = orderings[ordering_idx]
-    #     ordering_idx += 1
-    # end
-
-    # println("\nNEW ASSIGNMENTS")
-    # for b in all_flips
-    #     println("\t", b)
-    # end
+    ordering_idx = 1
+    for flip in all_flips
+        flip.ordering = orderings[ordering_idx]
+        ordering_idx += 1
+    end
 
     # Performs bit-wise ifelse 
     bits = map(then.bits, elze.bits) do tb, eb
