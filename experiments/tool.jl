@@ -14,7 +14,7 @@ TAG = "v120_stlctbeval"
 TAG = "v121_8sizeonly"
 TAG = "v122_more_ablation"
 TAG = "v133_artifact"
-OUT_TOP_DIR = joinpath(@__DIR__, "../../tuning-output")
+OUT_TOP_DIR = joinpath(@__DIR__, "../tuning-output")
 
 args = ARGS
 allow_overwrite = "-f" ∈ args

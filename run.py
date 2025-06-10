@@ -74,11 +74,23 @@ class TargetDistribution:
     name: str
     val_to_prob: Callable[[int], float] # val -> prob (non-normalized)
 
+
+# we commit the results, so this function fixes absolute paths to be relative to
+# the current working directory. if a fresh set of results is used, then this can
+# be replaced with the identity function
+def fix_tuning_output_path(log_path: str) -> str:
+    # extract the subpath starting with tuning-output, then
+    # change it so that tuning-output refers to the folder from which the script is run
+    subpath = "tuning-output/" + log_path.split("tuning-output/")[1]
+    # now return <current working directory>/<subpath>
+    return os.path.join(os.getcwd(), subpath)
+
 def run_training_run(config: Config, run: TrainingRun) -> TrainingResult:
     """Run a Julia command and return the log file path."""
 
     if not config.args.force:
         existing_log_path = run_tool(config, run.command + ["-l"]).log_path
+        existing_log_path = fix_tuning_output_path(existing_log_path)
         if os.path.exists(existing_log_path):
             print(f"Using existing log path: {existing_log_path}")
             return TrainingResult(existing_log_path)
@@ -88,7 +100,7 @@ def run_training_run(config: Config, run: TrainingRun) -> TrainingResult:
     if config.args.verbose:
         print(f"Log file path: {result.log_path}")
 
-    return result
+    return TrainingResult(result.log_path)
 
 def run_tool(config: Config, command: List[str]) -> TrainingResult:
     if config.args.verbose:
@@ -198,7 +210,9 @@ def handle_figure2_plots(config: Config, er : ExperimentResult) -> None:
     for key, training_result in er.training_results.items():
         """Handle distribution plots for figure 2 experiments."""
         initial_path = extract(training_result.log_path, r'Saved metric dist to (.*?loss1_dist_depth_initial\.csv)')
+        initial_path = fix_tuning_output_path(initial_path)
         trained_path = extract(training_result.log_path, r'Saved metric dist to (.*?loss1_dist_depth_trained\.csv)')
+        trained_path = fix_tuning_output_path(trained_path)
 
         target_is_linear = key.endswith('linear')
         if not target_is_linear:
@@ -268,6 +282,7 @@ def handle_unique_curves(config: Config, er: ExperimentResult, exp_name: str) ->
     combined_df = None
     for key, training_result in er.training_results.items():
         csv_path = extract(training_result.log_path, r'Saved unique curves to (.*unique_curves.*\.csv)')
+        csv_path = fix_tuning_output_path(csv_path)
         # the csv has no header, so we add it: 'num_samples', 'untrained', 'trained'
         cum_uniq = pd.read_csv(csv_path, sep='\t', header=None)
         cum_uniq.columns = ['num_samples', 'Untuned', key]
@@ -323,20 +338,37 @@ def copy_generators(config: Config, er: ExperimentResult) -> None:
     for key, training_result in er.training_results.items():
         initial_generator_path = extract(training_result.log_path, r'Saved Coq generator to (.*initial_Generator\.v)')
         trained_generator_path = extract(training_result.log_path, r'Saved Coq generator to (.*trained_Generator\.v)')
+        initial_generator_path = fix_tuning_output_path(initial_generator_path)
+        trained_generator_path = fix_tuning_output_path(trained_generator_path)
         shutil.copy2(initial_generator_path, os.path.join(config.output_dir, f"generators/{key}InitialGenerator.v"))
         shutil.copy2(trained_generator_path, os.path.join(config.output_dir, f"generators/{key}TrainedGenerator.v"))
+
+    # save training time to  <output_dir>/<fig>_<generator_name>_time.txt
+    # the training time is the last non-empyt line in the log file
+    for key, training_result in er.training_results.items():
+        log_path = training_result.log_path
+        with open(log_path, 'r') as f:
+            for line in f:
+                if line.strip():
+                    last_line = line
+        with open(os.path.join(config.output_dir, f"generators/{key}_time.txt"), 'w') as f:
+            f.write(last_line)
+
 
 def handle_figure11_plots(config: Config, er: ExperimentResult) -> None:
     copy_generators(config, er)
 
 def handle_figure12_plots(config: Config, er: ExperimentResult) -> None:
     """Handle distribution plots for figure 11 experiments."""
+    copy_generators(config, er)
 
     training_result = er.training_results["STLCBespoke"]
     log_path = training_result.log_path
 
     initial_path = extract(training_result.log_path, r'Saved metric dist to (.*?loss1_dist_num_apps_initial\.csv)')
     trained_path = extract(training_result.log_path, r'Saved metric dist to (.*?loss1_dist_num_apps_trained\.csv)')
+    initial_path = fix_tuning_output_path(initial_path)
+    trained_path = fix_tuning_output_path(trained_path)
 
     if config.args.verbose:
         print(f"Initial dist: {initial_path}")
@@ -349,7 +381,7 @@ def handle_figure12_plots(config: Config, er: ExperimentResult) -> None:
         print("Error: Value columns do not match between initial and trained distributions")
         sys.exit(1)
     
-    plot_path = os.path.join(config.output_dir, f"fig12_dist.png")
+    plot_path = os.path.join(config.output_dir, f"fig12b_dist.png")
     td = TargetDistribution(name='40/30/20/10', val_to_prob=lambda x: {0: 4, 1: 3, 2: 2, 3: 1}.get(x, 0))
     plot_distributions(initial_dist, trained_dist, plot_path, td, "STLC Bespoke Number of Applications")
     print(f"Plot saved to: {plot_path}")
@@ -573,6 +605,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--fig10-epochs', type=int, help='Number of epochs for figure 10 experiments')
     parser.add_argument('--fig11', action='store_true', help='Run figure 11 experiments')
     parser.add_argument('--fig12', action='store_true', help='Run figure 12 experiments')
+
     args, unknown = parser.parse_known_args()
     # assert there are no unknown arguments
     if unknown:
@@ -632,18 +665,19 @@ def parse_args() -> argparse.Namespace:
 def main():
     args = parse_args()
     output_dir_name = "experiments-output-fast" if args.fast else "experiments-output"
-    output_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), output_dir_name)
+    # outputdir is in cwd
+    output_dir = os.path.join(os.getcwd(), output_dir_name)
     os.makedirs(output_dir, exist_ok=True)
     config = Config(output_dir=output_dir, args=args)
     
     # Create experiments
     experiments = []
-    experiments.append(create_figure2_experiment(args) if args.fig2 else empty_experiment)
-    experiments.append(create_figure3_experiment(args) if args.fig3 else empty_experiment)
-    experiments.append(create_figure4_experiment(args) if args.fig4 else empty_experiment)
-    experiments.append(create_figure10_experiment(args) if args.fig10 else empty_experiment)
-    experiments.append(create_figure11_experiment(args) if args.fig11 else empty_experiment)
-    experiments.append(create_figure12_experiment(args) if args.fig12 else empty_experiment)
+    experiments.append(create_figure2_experiment(args) if args.fig2 or args.all else empty_experiment)
+    experiments.append(create_figure3_experiment(args) if args.fig3 or args.all else empty_experiment)
+    experiments.append(create_figure4_experiment(args) if args.fig4 or args.all else empty_experiment)
+    experiments.append(create_figure10_experiment(args) if args.fig10 or args.all else empty_experiment)
+    experiments.append(create_figure11_experiment(args) if args.fig11 or args.all else empty_experiment)
+    experiments.append(create_figure12_experiment(args) if args.fig12 or args.all else empty_experiment)
     
     if args.parallel:
         result = run_experiments_parallel(config, experiments)

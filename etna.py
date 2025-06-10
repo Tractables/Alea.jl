@@ -7,12 +7,6 @@ import subprocess
 import sys
 from datetime import datetime
 
-# notes for later:
-# opam setups
-# opam switch create 4.10.0+afl
-# opam pin coq 8.15.2
-
-
 workload_to_generators = {
     "BST": ["BSTTypeBasedInitialGenerator.v", "BSTTypeBasedTrainedGenerator.v"],
     "RBT": ["RBTTypeBasedInitialGenerator.v", "RBTTypeBasedTrainedGenerator.v"],
@@ -54,24 +48,99 @@ def copy_results():
     # Copy bespoke generator time plot
     shutil.copy("lib/etna/figures-artifact/stlc_bespoke_times.png", "experiments-output/fig12a_stlc_bespoke_times.png")
 
-    # Create table1.txt with speedup information
+    # Create table1.txt with speedup and training time information
     with open("lib/etna/figures-artifact/bst_type_based_speedups.txt") as f:
         bst_speedups = f.read().strip()
+    with open("experiments-output/generators/BSTTypeBased_time.txt") as f:
+        bst_time = f.read().strip()
+        
     with open("lib/etna/figures-artifact/rbt_type_based_speedups.txt") as f:
         rbt_speedups = f.read().strip()
+    with open("experiments-output/generators/RBTTypeBased_time.txt") as f:
+        rbt_time = f.read().strip()
+        
     with open("lib/etna/figures-artifact/stlc_type_based_speedups.txt") as f:
         stlc_type_speedups = f.read().strip()
+    with open("experiments-output/generators/STLCTypeBased_time.txt") as f:
+        stlc_type_time = f.read().strip()
+        
     with open("lib/etna/figures-artifact/stlc_bespoke_speedups.txt") as f:
         stlc_bespoke_speedups = f.read().strip()
+    with open("experiments-output/generators/STLCBespoke_time.txt") as f:
+        stlc_bespoke_time = f.read().strip()
 
-    table_content = f"""BST-Type Based:
-{bst_speedups}
-RBT-Type Based:
-{rbt_speedups}
-STLC-Type Based:
-{stlc_type_speedups}
-STLC-Bespoke:
-{stlc_bespoke_speedups}"""
+    def format_time(time_str):
+        parts = time_str.split("Total time elapsed: ")[1].split(", ")
+        minutes = int(parts[0].split(" ")[0])
+        seconds = int(parts[1].split(" ")[0])
+        return f"{minutes}m{seconds}s"
+
+    def format_speedups(text):
+        lines = text.strip().split('\n')
+        vs_etna = lines[0].split('is ')[1].split('x')[0].strip()
+        vs_initial = lines[1].split('is ')[1].split('x')[0].strip()
+        return vs_etna, vs_initial
+
+    def make_table(headers, rows, aligns=None):
+        """Create an ASCII table with proper padding.
+        
+        Args:
+            headers: List of column headers
+            rows: List of rows (each row is a list of values)
+            aligns: List of alignments ('l', 'r', 'c') for each column
+        """
+        if aligns is None:
+            aligns = ['l'] * len(headers)
+            
+        # Calculate column widths based on content
+        widths = [len(h) for h in headers]
+        for row in rows:
+            for i, val in enumerate(row):
+                widths[i] = max(widths[i], len(str(val)))
+                
+        # Add padding
+        widths = [w + 2 for w in widths]
+        
+        # Format headers with left alignment and single space padding
+        header_str = " │ ".join(f" {h:<{w-2}} " for h, w in zip(headers, widths))
+        
+        # Create the separator line that extends fully
+        sep = "─" * (sum(widths) + 3 * (len(widths) - 1))  # account for ' │ ' between columns
+        
+        # Format data rows
+        align_map = {'l': '<', 'r': '>', 'c': '^'}
+        formats = [f"{{:{align_map[a]}{w}}}" for w, a in zip(widths, aligns)]
+        row_strs = []
+        for row in rows:
+            row_strs.append(" │ ".join(f.format(str(val)) for f, val in zip(formats, row)))
+            
+        # Combine all parts
+        return f"{header_str}\n{sep}\n" + "\n".join(row_strs)
+
+    # Prepare data
+    headers = ["Generator & Workload", "Speedup vs Etna", "Speedup vs Untuned", "Train Time"]
+    table_rows = []
+    for name, speedups, time in [
+        ("BST Type-based", bst_speedups, bst_time),
+        ("RBT Type-based", rbt_speedups, rbt_time),
+        ("STLC Type-based", stlc_type_speedups, stlc_type_time),
+        ("STLC Bespoke", stlc_bespoke_speedups, stlc_bespoke_time)
+    ]:
+        vs_etna, vs_initial = format_speedups(speedups)
+        formatted_time = format_time(time)
+        table_rows.append([
+            f"{name:<20}",  # Fixed width for consistent alignment
+            f"{vs_etna}x",
+            f"{vs_initial}x",
+            formatted_time
+        ])
+
+    # Generate table with appropriate alignments
+    table_content = make_table(
+        headers,
+        table_rows,
+        aligns=['l', 'r', 'r', 'r']
+    )
 
     with open("experiments-output/table1.txt", "w") as f:
         f.write(table_content)
@@ -115,14 +184,14 @@ def run_etna(args: argparse.Namespace):
     run_command("python3 bounds-switch.py to_max", cwd=etna_dir, log_file=log_file)
 
 
-
-    # from lib/etna/workloads/Coq/<workload>, run coq_makefile -f _CoqProject -o Makefile && make
     # run_command("python3 experiments/coq-experiments/new/Collect.py --data=data-artifact", cwd=etna_dir, log_file=log_file)
     # for workload in workload_to_generators.keys():
     #     workload_dir = os.path.join(etna_dir, "workloads", "Coq", workload)
     #     run_command("coq_makefile -f _CoqProject -o Makefile && make", cwd=workload_dir, log_file=log_file)
     # run_command("python3 experiments/coq-experiments/new/Collect.py --data=data-artifact", cwd=etna_dir, log_file=log_file)
 
+    # mk lib/etna/data-artifact if it doesn't exist
+    # os.makedirs(os.path.join(etna_dir, "data-artifact"), exist_ok=True)
     run_command("python3 experiments/coq-experiments/new/Analysis.py --data=data-artifact --figures=figures-artifact", cwd=etna_dir, log_file=log_file)
 
 if __name__ == "__main__":

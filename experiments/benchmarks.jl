@@ -70,7 +70,7 @@ function run_benchmark(
     function collect_unique_curves()
         [
             if m isa FeatureSpecEntropyLossMgr
-                feature_unique_curve(rs, generation.prog, m.feature, UNIQUE_CURVES_SAMPLES)
+                feature_unique_curve(rs, generation.prog, m.p.feature, UNIQUE_CURVES_SAMPLES)
             elseif mk_unique_curves
                 # TODO: make not hardcoded for RBT
                 function feat(d)

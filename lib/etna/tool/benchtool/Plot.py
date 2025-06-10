@@ -214,7 +214,10 @@ def stacked_barchart_times(
 
 
     strategy_to_xs_ys = {}
+
     for strategy, times in strategy_to_times.items():
+        # generator.name maps to style as follows:
+
         generator = strategy_to_generator[strategy]
         time_points = [0] + times + [60]
         bugs_found = [0] + list(range(1, len(times) + 1)) + [len(times)]
@@ -227,17 +230,25 @@ def stacked_barchart_times(
             })
 
     teal, blue, red = 'teal', '#1E88E5', '#FF3333'
-    reordered = [teal, red, blue]
-    sns.set_palette(reordered, 3)
-
     df = pd.DataFrame(data)
+    df = df.sort_values(by='Strategy', key=lambda x: x.map({'Etna': 0, 'Initial': 1, 'Trained': 2}))
+
     ax = sns.lineplot(
         data=df,
         x="Time (s)",
-        y="# bugs found",
+        y="# bugs found", 
         hue="Strategy",
         style="Strategy",
-        dashes=[(2,2), (),()] ,  # dashed, solid, solid
+        palette={
+            "Etna": teal,
+            "Initial": red, 
+            "Trained": blue
+        },
+        dashes={
+            "Etna": (2,2),
+            "Initial": "",
+            "Trained": ""
+        },
         # alpha=0.7,
         linewidth=4,
     )
