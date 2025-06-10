@@ -1,0 +1,4 @@
+Trained is 3.2x faster than Etna
+Trained is 5.0x faster than Initial
+
+

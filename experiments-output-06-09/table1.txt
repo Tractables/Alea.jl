@@ -1,0 +1,6 @@
+ Generator & Workload  │  Speedup vs Etna  │  Speedup vs Untuned  │  Train Time 
+────────────────────────────────────────────────────────────────────────────────
+BST Type-based         │              3.2x │                 5.0x │        3m17s
+RBT Type-based         │              5.1x │                 7.0x │        3m30s
+STLC Type-based        │              5.0x │                 3.3x │        7m46s
+STLC Bespoke           │              2.5x │                 2.0x │         9m5s
