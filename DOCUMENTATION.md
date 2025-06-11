@@ -1,16 +1,13 @@
 # Setup
 
-1. Clone this repo.
-2. Follow the "Julia setup" in the README.
-3. See `tutorial` for "tours" of Loaded Dice and `examples` for some simple
-tuning examples.
+Follow [README.md#julia-setup](README.md#julia-setup).
 
-Recommended: to run and tinker with the tutorials line-by-line, use the Julia
-VSCode extension, which supports line-by-line evaluation.
+Recommended: to run and tinker with the tutorials line-by-line, also install the
+Julia VSCode extension, which supports line-by-line evaluation.
 
 # Learning generator probabilities in Dice
 
-Once the setup is complete, see [`tours/tour_1_core.jl`](tours/tour_1_core.jl) for a quick start to Loaded Dice. Then, see [`tours/tour_2_learning.jl`](tours/tour_2_learning.jl) for an introduction to learning probabilities.
+Once the setup is complete, see [`tutorial/tour_1_core.jl`](tutorial/tour_1_core.jl) for a quick start to Loaded Dice. Then, see [`tutorial/tour_2_learning.jl`](tutorial/tour_2_learning.jl) for an introduction to learning probabilities.
 
 The following related programs are included. The expected output of each is in a comment at the bottom of the file.
 - Generator for nat lists ([`examples/demo_natlist.jl`](examples/demo_natlist.jl))
