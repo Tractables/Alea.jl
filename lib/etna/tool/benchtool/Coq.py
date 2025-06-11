@@ -50,6 +50,7 @@ class Coq(BenchTool):
             self._shell_command(['coq_makefile', '-f', '_CoqProject', '-o', 'Makefile'])
             self._shell_command(['make', 'clean'])
             self._shell_command(['make'])
+            print(f"Built {workload_path}")
 
             for cmd in strategy_build_commands:
                 self._shell_command(cmd.split(" "))

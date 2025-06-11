@@ -184,11 +184,12 @@ def run_etna(args: argparse.Namespace):
     run_command("python3 bounds-switch.py to_max", cwd=etna_dir, log_file=log_file)
 
 
-    # run_command("python3 experiments/coq-experiments/new/Collect.py --data=data-artifact", cwd=etna_dir, log_file=log_file)
     # for workload in workload_to_generators.keys():
     #     workload_dir = os.path.join(etna_dir, "workloads", "Coq", workload)
     #     run_command("coq_makefile -f _CoqProject -o Makefile && make", cwd=workload_dir, log_file=log_file)
-    # run_command("python3 experiments/coq-experiments/new/Collect.py --data=data-artifact", cwd=etna_dir, log_file=log_file)
+    # print in red
+    print("\033[91mRunning Collect.py\033[0m")
+    run_command("python3 experiments/coq-experiments/new/Collect.py --data=data-artifact", cwd=etna_dir, log_file=log_file)
 
     # mk lib/etna/data-artifact if it doesn't exist
     # os.makedirs(os.path.join(etna_dir, "data-artifact"), exist_ok=True)

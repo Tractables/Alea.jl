@@ -4,9 +4,12 @@ authors = [""]
 version = "0.1.0"
 
 [deps]
+CUDD = "345a2cc7-28d8-58b2-abdf-cff77ea7d7f1"
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+Dice = "94eeadfc-1ba6-40b7-9ed8-dee71557d525"
 DirectedAcyclicGraphs = "1e6dae5e-d6e2-422d-9af3-452e7a3785ee"
+IRTools = "7869d1d1-7146-5819-86e3-90919afe41df"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"

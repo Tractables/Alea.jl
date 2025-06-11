@@ -1,4 +1,17 @@
-# Learning generator probabilities in Dice
+# Setup
+
+1. Clone this repo.
+2. Follow the "Julia setup" in the README.
+3. See `tutorial` for "tours" of Loaded Dice and `examples` for some simple
+tuning examples.
+
+Recommended: to run and tinker with the tutorials line-by-line, use the Julia
+VSCode extension, which supports line-by-line evaluation.
+
+
+# OLD README CONTENTS
+
+## Learning generator probabilities in Dice
 
 Once the installation (see [`../README.md`](../README.md)) is complete, see [`../test/tours/tour_1_core.jl`](../test/tours/tour_1_core.jl) for a quick start to Dice.jl. Then, see [`../test/tours/tour_2_learning.jl`](../test/tours/tour_2_learning.jl) for an introduction to learning probabilities with MLE in Dice.jl.
 

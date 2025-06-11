@@ -1,12 +1,23 @@
 # Artifact for Tuning Random Generators
 
-<!-- TODO -->
-<!-- ## Instructions (Docker)
+## Setup (Docker)
 
-Run
 ```
+# Build the container
 docker build -t artifact .
-``` -->
+
+
+docker run -it artifact bash -c "./run.py --all --parallel && ./etna.py"
+
+# Run the container with kick-the-tires (fast check)
+docker run -it artifact bash -c "eval \$(opam env) && ./run.py --fast --parallel && ./etna.py"
+
+# Run the full experiments (takes several hours)
+docker run -it artifact
+
+# Run interactively to explore
+docker run -it artifact bash
+```
 
 This document describes how to reproduce the figures in the paper. To make our
 systems reusable, we also include "tour"-style tutorials of Loaded Dice, which
