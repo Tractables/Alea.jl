@@ -10,7 +10,7 @@ VSCode extension, which supports line-by-line evaluation.
 
 # Learning generator probabilities in Dice
 
-Once the setup (see [`../README.md`](../README.md)) is complete, see [`tours/tour_1_core.jl`](tours/tour_1_core.jl) for a quick start to Loaded Dice. Then, see [`tours/tour_2_learning.jl`](tours/tour_2_learning.jl) for an introduction to learning probabilities.
+Once the setup is complete, see [`tours/tour_1_core.jl`](tours/tour_1_core.jl) for a quick start to Loaded Dice. Then, see [`tours/tour_2_learning.jl`](tours/tour_2_learning.jl) for an introduction to learning probabilities.
 
 The following related programs are included. The expected output of each is in a comment at the bottom of the file.
 - Generator for nat lists ([`examples/demo_natlist.jl`](examples/demo_natlist.jl))
