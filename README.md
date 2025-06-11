@@ -5,6 +5,10 @@
 ```
 # Build the container
 docker build -t artifact .
+docker run --name artifact-run artifact bash -c "./run.py --all --parallel && ./etna.py"
+docker cp artifact-run:/app/experiments-output ./experiments-output
+
+
 
 
 docker run -it artifact bash -c "./run.py --all --parallel && ./etna.py"
@@ -24,6 +28,10 @@ systems reusable, we also include "tour"-style tutorials of Loaded Dice, which
 are described in [DOCUMENTATION.md](./DOCUMENTATION.md).
 
 ## Kick-the-tires
+
+```
+docker run -it artifact bash -c "eval \$(opam env) && ./run.py --all --parallel && ./etna.py
+```
 
 We have committed results from training and Etna to allow for a "kick-the-tires"
 check on the artifact infrastructure. To do so, first follow instructions in 
