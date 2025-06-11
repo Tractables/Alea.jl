@@ -3,7 +3,7 @@
 Follow [README.md#julia-setup](README.md#julia-setup).
 
 Recommended: to run and tinker with the tutorials line-by-line, also install the
-Julia VSCode extension, which supports line-by-line evaluation.
+Julia VSCode extension.
 
 # Learning generator probabilities in Dice
 
