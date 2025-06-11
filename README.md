@@ -40,18 +40,13 @@ and re-run the instructions in [Reproducing Figures](#reproducing-figures):
 
 ## Julia setup
 
-Install Julia 1.10.
+Install Julia 1.10. Then run the following from the root of the directory:
 
 ```
+julia --project -e 'using Pkg; Pkg.instantiate()'
 julia --project -e 'using Pkg; Pkg.develop(path="lib/IRTools.jl")'
 julia --project -e 'using Pkg; Pkg.develop(path="lib/CUDD.jl")'
 julia --project -e 'using Pkg; Pkg.develop(path="lib/Dice.jl")'
-julia --project -e 'using Pkg; Pkg.add("DataStructures")'
-julia --project -e 'using Pkg; Pkg.add("DirectedAcyclicGraphs")'
-julia --project -e 'using Pkg; Pkg.add("Combinatorics")'
-julia --project -e 'using Pkg; Pkg.add("Plots")'
-julia --project -e 'using Pkg; Pkg.add("Random")'
-julia --project -e 'using Pkg; Pkg.add("JLD2")'
 ```
 
 ## Python setup
