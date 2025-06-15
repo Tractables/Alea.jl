@@ -15,6 +15,9 @@ RUN opam init --disable-sandboxing -y
 RUN opam switch create 4.10.0+afl -y
 RUN eval $(opam env) && opam pin coq 8.15.2 -y --assume-depexts
 
+# Set up opam environment in .bashrc
+RUN echo 'eval $(opam env)' >> /root/.bashrc
+
 # Copy Python requirements and install packages
 COPY requirements.txt .
 RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
@@ -22,7 +25,7 @@ RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 # Copy Julia project files
 COPY lib/project-for-artifact/Project.toml ./
 
-# Copy local Julia packages
+# Copy local Julia packages and QuickChick
 COPY lib/ ./lib/
 
 # Install Julia packages
@@ -30,6 +33,9 @@ RUN julia --project -e 'using Pkg; Pkg.instantiate()'
 RUN julia --project -e 'using Pkg; Pkg.develop(path="lib/IRTools.jl")'
 RUN julia --project -e 'using Pkg; Pkg.develop(path="lib/CUDD.jl")'
 RUN julia --project -e 'using Pkg; Pkg.develop(path="lib/Dice.jl")'
+
+# Install Coq QuickChick (from lib/QuickChick, run `make install`)
+RUN cd lib/QuickChick && make install
 
 # Copy the rest of the application
 COPY . .
