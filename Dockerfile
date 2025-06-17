@@ -8,12 +8,23 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y python3 python3-pip
 
 # Install opam and other dependencies
-RUN apt-get install -y opam build-essential libgmp-dev pkg-config
+RUN apt-get install -y opam build-essential libgmp-dev pkg-config ocamlbuild
 
 # Initialize opam and install Coq
 RUN opam init --disable-sandboxing -y
 RUN opam switch create 4.10.0+afl -y
-RUN eval $(opam env) && opam pin coq 8.15.2 -y --assume-depexts
+RUN eval $(opam env) && opam repo add coq-released https://coq.inria.fr/opam/released
+RUN eval $(opam env) && opam update
+RUN eval $(opam env) && opam install -y ocamlbuild cppo.1.6.9 coq-mathcomp-ssreflect.1.17.0 coq-ext-lib.0.11.8 coq-simple-io.1.8.0
+
+COPY lib/ ./lib/
+
+# Build and install QuickChick from source
+# TODO_ARTIFACT: this doesn't work. but installing
+# - see lib/etna/README.md for Etna's notes on 
+# see lib
+# RUN eval $(opam env) && cd lib/QuickChick && make
+# RUN eval $(opam env) && cd lib/QuickChick && make install
 
 # Set up opam environment in .bashrc
 RUN echo 'eval $(opam env)' >> /root/.bashrc
@@ -26,7 +37,6 @@ RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 COPY lib/project-for-artifact/Project.toml ./
 
 # Copy local Julia packages and QuickChick
-COPY lib/ ./lib/
 
 # Install Julia packages
 RUN julia --project -e 'using Pkg; Pkg.instantiate()'
@@ -35,7 +45,6 @@ RUN julia --project -e 'using Pkg; Pkg.develop(path="lib/CUDD.jl")'
 RUN julia --project -e 'using Pkg; Pkg.develop(path="lib/Dice.jl")'
 
 # Install Coq QuickChick (from lib/QuickChick, run `make install`)
-RUN cd lib/QuickChick && make install
 
 # Copy the rest of the application
 COPY . .

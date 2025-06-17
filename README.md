@@ -5,11 +5,17 @@
 ```
 # Build the container
 docker build -t artifact .
-docker run --name artifact-run artifact bash -c "./run.py --all --parallel && ./etna.py"
+docker run --name artifact-run artifact bash -c "./run.py --all --parallel"
+<!-- TODO_ARTIFACT: use the below command instead, which also runs etna -->
+<!-- docker run --name artifact-run artifact bash -c "./run.py --all --parallel && ./etna.py" -->
+
 docker cp artifact-run:/app/experiments-output ./experiments-output
 
 
 
+
+# my command for debugging
+docker run -it artifact bash -c "./run.py --all --parallel && ./etna.py; bash"
 
 docker run -it artifact bash -c "./run.py --all --parallel && ./etna.py"
 
