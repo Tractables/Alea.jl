@@ -1,39 +1,45 @@
 # Artifact for Tuning Random Generators
 
-## Setup (Docker)
-
-```
-# Build the container
-docker build -t artifact .
-docker run --name artifact-run artifact bash -c "./run.py --all --parallel"
-# TODO_ARTIFACT: use the below command instead, which also runs etna, once
-# docker run --name artifact-run artifact bash -c "./run.py --all --parallel && ./etna.py"
-
-docker cp artifact-run:/app/experiments-output ./experiments-output
-```
-
 This document describes how to reproduce the figures in the paper. To make our
 systems reusable, we also include "tour"-style tutorials of Loaded Dice, which
 are described in [DOCUMENTATION.md](./DOCUMENTATION.md).
 
-## Kick-the-tires
+# Docker
+
+Install Docker. To build the container:
 
 ```
-docker run -it artifact bash -c "eval \$(opam env) && ./run.py --all --parallel && ./etna.py
+docker build -t artifact .
 ```
 
 We have committed results from training and Etna to allow for a "kick-the-tires"
-check on the artifact infrastructure. To do so, first follow instructions in 
-this document as instructed. When possible, cached results should be used, so no
-single command should take more than a few seconds.
+check on the artifact infrastructure. When possible, cached results should be
+used, so no single command should take more than a few seconds. To test the
+artifact using these cached results, run the following.
 
-Then, to reproduce the results from scratch, delete the following directories
-and re-run the instructions in [Reproducing Figures](#reproducing-figures):
-- `experiments-output`
-- `lib/etna/data-artifact`
-- `lib/etna/figures-artifact`
+```
+docker run --name artifact-run artifact bash -c "./run.py --all --parallel"
+docker cp artifact-run:/app/experiments-output ./experiments-output-kick-tires
+```
 
-# Instructions
+To clean up the docker container, run the following.
+```
+docker rm artifact-run
+```
+
+Now, run the following to reproduce the results from scratch, then see the contents of `experiments-output-full`.
+```
+docker run --name artifact-run artifact bash -c "rm experiments-output lib/etna/data-artifact lib/etna/figures-artifact"
+docker run --name artifact-run artifact bash -c "./run.py --all --parallel"
+docker cp artifact-run:/app/experiments-output ./experiments-output-full
+```
+
+```
+TODO_ARTIFACT: use the below command instead, which also runs etna, once we can get QuickChick to build
+docker run --name artifact-run artifact bash -c "./run.py --all --parallel && ./etna.py"
+```
+
+# Manual
 
 ## Julia setup
 
@@ -71,10 +77,16 @@ From the repository root, run:
 ./etna.py
 ```
 
-This is expected to take a few hours to run. See
-[Troubleshooting](#troubleshooting) if errors occur.
-Then, the following files should be in `experiments-output`:
+From a fresh state of the artifact, this should take less than 5 minutes,
+as the results are cached. To regenerate the results, re-run the above scripts
+after deleting the following directories, which should then take a few hours to
+run.
+- `experiments-output`
+- `lib/etna/data-artifact`
+- `lib/etna/figures-artifact`
 
+For a run, see [Troubleshooting](#troubleshooting) if errors occur. Upon
+success, the following files should be in `experiments-output`.
 ```
 fig2_rbt_type_based_linear.png  
 fig2_rbt_type_based_uniform.png
@@ -82,11 +94,15 @@ fig2_stlc_bespoke_linear.png
 fig2_stlc_bespoke_uniform.png    
 fig2_stlc_type_based_linear.png 
 fig2_stlc_type_based_uniform.png
+fig3a_stlc_unique_types_dist.png
+fig3b_stlc_cumulative_unique_types.svg
+fig4_cumulative_unique_types.png
+fig10_cumulative_unique_types.png
 fig11a_bst_type_based_times.png
 fig11b_rbt_type_based_times.png
 fig11c_stlc_type_based_times.png  
-fig12b_dist.png                 
 fig12a_stlc_bespoke_times.png
+fig12b_dist.png                 
 table1.txt
 ```
 
@@ -99,6 +115,7 @@ Figures 11 and 12b depend on the particular Etna run, so will differ. They
 should be similar, but the important properties should be quantitively compared
 by consulting table1.txt.
 
+```
 TODO_ARTIFACT: give bounds. below are examples from three runs
 
  Generator & Workload  │  Speedup vs Etna  │  Speedup vs Untuned  │  Train Time 
@@ -121,6 +138,7 @@ BST Type-based         │              3.2x │                 5.0x │       
 RBT Type-based         │              5.1x │                 7.0x │        3m30s
 STLC Type-based        │              5.0x │                 3.3x │        7m46s
 STLC Bespoke           │              2.5x │                 2.0x │         9m5s
+```
 
 # Troubleshooting
 
