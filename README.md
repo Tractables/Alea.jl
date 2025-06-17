@@ -6,27 +6,10 @@
 # Build the container
 docker build -t artifact .
 docker run --name artifact-run artifact bash -c "./run.py --all --parallel"
-<!-- TODO_ARTIFACT: use the below command instead, which also runs etna -->
-<!-- docker run --name artifact-run artifact bash -c "./run.py --all --parallel && ./etna.py" -->
+# TODO_ARTIFACT: use the below command instead, which also runs etna, once
+# docker run --name artifact-run artifact bash -c "./run.py --all --parallel && ./etna.py"
 
 docker cp artifact-run:/app/experiments-output ./experiments-output
-
-
-
-
-# my command for debugging
-docker run -it artifact bash -c "./run.py --all --parallel && ./etna.py; bash"
-
-docker run -it artifact bash -c "./run.py --all --parallel && ./etna.py"
-
-# Run the container with kick-the-tires (fast check)
-docker run -it artifact bash -c "eval \$(opam env) && ./run.py --fast --parallel && ./etna.py"
-
-# Run the full experiments (takes several hours)
-docker run -it artifact
-
-# Run interactively to explore
-docker run -it artifact bash
 ```
 
 This document describes how to reproduce the figures in the paper. To make our
@@ -116,7 +99,28 @@ Figures 11 and 12b depend on the particular Etna run, so will differ. They
 should be similar, but the important properties should be quantitively compared
 by consulting table1.txt.
 
-TODO: give bounds
+TODO_ARTIFACT: give bounds. below are examples from three runs
+
+ Generator & Workload  │  Speedup vs Etna  │  Speedup vs Untuned  │  Train Time 
+────────────────────────────────────────────────────────────────────────────────
+BST Type-based         │              3.5x │                 5.4x │        3m
+RBT Type-based         │              5.3x │                 5.7x │        3m
+STLC Type-based        │              5.5x │                 3.2x │        7m
+STLC Bespoke           │              2.3x │                 1.9x │        8ms
+
+ Generator & Workload  │  Speedup vs Etna  │  Speedup vs Untuned  │  Train Time 
+────────────────────────────────────────────────────────────────────────────────
+BST Type-based         │              3.6x │                 5.2x │        2m49s
+RBT Type-based         │              5.3x │                 5.7x │         3m4s
+STLC Type-based        │              5.5x │                 3.2x │        6m49s
+STLC Bespoke           │              2.4x │                 1.7x │        7m54s
+
+ Generator & Workload  │  Speedup vs Etna  │  Speedup vs Untuned  │  Train Time 
+────────────────────────────────────────────────────────────────────────────────
+BST Type-based         │              3.2x │                 5.0x │        3m17s
+RBT Type-based         │              5.1x │                 7.0x │        3m30s
+STLC Type-based        │              5.0x │                 3.3x │        7m46s
+STLC Bespoke           │              2.5x │                 2.0x │         9m5s
 
 # Troubleshooting
 

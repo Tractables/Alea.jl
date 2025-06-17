@@ -20,9 +20,7 @@ RUN eval $(opam env) && opam install -y ocamlbuild cppo.1.6.9 coq-mathcomp-ssref
 COPY lib/ ./lib/
 
 # Build and install QuickChick from source
-# TODO_ARTIFACT: this doesn't work. but installing
-# - see lib/etna/README.md for Etna's notes on 
-# see lib
+# TODO_ARTIFACT: the below errors for me
 # RUN eval $(opam env) && cd lib/QuickChick && make
 # RUN eval $(opam env) && cd lib/QuickChick && make install
 
