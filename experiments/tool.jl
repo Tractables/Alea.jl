@@ -114,7 +114,11 @@ end
 mkpath(out_dir)
 rs = RunState(Valuation(), Dict{String,ADNode}(), open(log_path, "w"), out_dir, MersenneTwister(SEED), nothing,generation_params)
 
-commit = strip(cmd_out(Cmd(`git rev-parse --short HEAD`, dir=@__DIR__)))
+try
+    commit = strip(cmd_out(Cmd(`git rev-parse --short HEAD`, dir=@__DIR__)))
+catch
+    commit = "unknown_commit"
+end
 t = now()
 println_loud(rs, "$(t) $(commit) $(ARGS)")
 println_loud(rs, "== Config ==")
