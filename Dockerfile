@@ -15,14 +15,15 @@ RUN opam init --disable-sandboxing -y
 RUN opam switch create 4.10.0+afl -y
 RUN eval $(opam env) && opam repo add coq-released https://coq.inria.fr/opam/released
 RUN eval $(opam env) && opam update
-RUN eval $(opam env) && opam install -y ocamlbuild cppo.1.6.9 coq-mathcomp-ssreflect.1.17.0 coq-ext-lib.0.11.8 coq-simple-io.1.8.0
+RUN eval $(opam env) && opam pin coq 8.15.0 -y
 
 COPY lib/ ./lib/
 
 # Build and install QuickChick from source
 # TODO_ARTIFACT: the below errors for me
-# RUN eval $(opam env) && cd lib/QuickChick && make
-# RUN eval $(opam env) && cd lib/QuickChick && make install
+RUN eval $(opam env) && cd lib/QuickChick && opam install . --deps-only -y
+RUN eval $(opam env) && cd lib/QuickChick && make
+RUN eval $(opam env) && cd lib/QuickChick && make install
 
 # Set up opam environment in .bashrc
 RUN echo 'eval $(opam env)' >> /root/.bashrc
