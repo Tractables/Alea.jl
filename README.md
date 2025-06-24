@@ -66,7 +66,7 @@ Install opam, then:
 
 ```bash
 opam switch create 4.10.0+afl
-opam pin coq 8.15.2
+opam pin coq 8.15.0
 ```
 
 # Reproducing figures

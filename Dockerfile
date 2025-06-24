@@ -22,6 +22,7 @@ COPY lib/ ./lib/
 # Build and install QuickChick from source
 # TODO_ARTIFACT: the below errors for me
 RUN eval $(opam env) && cd lib/QuickChick && opam install . --deps-only -y
+RUN eval $(opam env) && cd lib/QuickChick && make clean
 RUN eval $(opam env) && cd lib/QuickChick && make
 RUN eval $(opam env) && cd lib/QuickChick && make install
 
