@@ -104,7 +104,7 @@ def run_training_run(config: Config, run: TrainingRun) -> TrainingResult:
 
 def run_tool(config: Config, command: List[str]) -> TrainingResult:
     if config.args.verbose:
-        print(f"Running command: {' '.join(command)}")
+        print("Running command: " + " ".join([command[0]] + [f'"{arg}"' for arg in command[1:]]))
 
     result = subprocess.run(command, capture_output=True, text=True)
     if result.returncode != 0:
