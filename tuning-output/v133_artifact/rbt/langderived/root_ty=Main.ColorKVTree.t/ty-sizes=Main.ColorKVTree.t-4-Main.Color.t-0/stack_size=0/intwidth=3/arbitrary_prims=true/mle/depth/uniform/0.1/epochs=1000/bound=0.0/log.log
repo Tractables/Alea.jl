@@ -1,4 +1,4 @@
-2025-06-23T22:46:08.350 unknown_commit ["-f", "LangDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],0,3,true)", "Pair{MLELossConfig{RBT},Float64}[MLELossConfig{RBT}(depth,Uniform())=>0.1]", "1000", "0.0"]
+2025-06-24T18:54:15.003 3cdad39b ["-f", "LangDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],0,3,true)", "Pair{MLELossConfig{RBT},Float64}[MLELossConfig{RBT}(depth,Uniform())=>0.1]", "1000", "0.0"]
 == Config ==
 TAG: v133_artifact
 LangDerivedGenerator{RBT}(Main.ColorKVTree.t, Pair{Type, Integer}[Main.ColorKVTree.t => 4, Main.Color.t => 0], 0, 3, true)
@@ -9,3 +9,36 @@ SEED: 0
 ARGS: -f LangDerivedGenerator{RBT}(Main.ColorKVTree.t,Pair{Type,Integer}[Main.ColorKVTree.t=>4,Main.Color.t=>0],0,3,true) Pair{MLELossConfig{RBT},Float64}[MLELossConfig{RBT}(depth,Uniform())=>0.1] 1000 0.0
 
 Building generation computation graph...
+  7.892073571 seconds
+
+Building computation graph for MLELossConfig{RBT}(depth, Uniform())...
+  4.456447794 seconds
+
+ADNodes of interest (initial):
+Dict("Frequency3_T%%4" => 0.5, "Frequency3_T%%1" => 0.5, "Frequency3_E%%4" => 0.5, "Frequency1_R%%0" => 0.5, "Frequency2_E%%0" => 0.5, "Frequency3_E%%2" => 0.5, "Frequency1_B%%0" => 0.5, "Frequency3_T%%3" => 0.5, "Frequency3_T%%2" => 0.5, "Frequency3_E%%1" => 0.5, "Frequency3_E%%3" => 0.5)
+
+Parameter values (initial):
+Dict{Var, Union{Real, AbstractMatrix{<:Real}}}(Var("Frequency3_T%%2_before_sigmoid") => 0, Var("Frequency3_T%%4_before_sigmoid") => 0, Var("Frequency3_T%%1_before_sigmoid") => 0, Var("Frequency3_E%%4_before_sigmoid") => 0, Var("Frequency3_E%%2_before_sigmoid") => 0, Var("Frequency2_E%%0_before_sigmoid") => 0, Var("Frequency3_T%%3_before_sigmoid") => 0, Var("Frequency1_B%%0_before_sigmoid") => 0, Var("Frequency3_E%%1_before_sigmoid") => 0, Var("Frequency3_E%%3_before_sigmoid") => 0, Var("Frequency1_R%%0_before_sigmoid") => 0)
+
+Saved Coq generator to /scratch/tjoa/Alea.jl/experiments/../tuning-output/v133_artifact/rbt/langderived/root_ty=Main.ColorKVTree.t/ty-sizes=Main.ColorKVTree.t-4-Main.Color.t-0/stack_size=0/intwidth=3/arbitrary_prims=true/mle/depth/uniform/0.1/epochs=1000/bound=0.0/initial_Generator.v
+
+Saving initial distribution...
+  0.061666067 seconds
+Saved metric dist to /scratch/tjoa/Alea.jl/experiments/../tuning-output/v133_artifact/rbt/langderived/root_ty=Main.ColorKVTree.t/ty-sizes=Main.ColorKVTree.t-4-Main.Color.t-0/stack_size=0/intwidth=3/arbitrary_prims=true/mle/depth/uniform/0.1/epochs=1000/bound=0.0/loss1_dist_depth_initial.csv
+
+
+ADNodes of interest (trained):
+Dict("Frequency3_T%%4" => 0.7109014559011124, "Frequency3_T%%1" => 0.20631945020994186, "Frequency3_E%%4" => 0.17772536397527836, "Frequency1_R%%0" => 0.5, "Frequency2_E%%0" => 0.5, "Frequency3_E%%2" => 0.6212014628814964, "Frequency1_B%%0" => 0.5, "Frequency3_T%%3" => 0.5000349352881955, "Frequency3_T%%2" => 0.34400520277315855, "Frequency3_E%%1" => 0.6956652368039565, "Frequency3_E%%3" => 0.5000349352881955)
+
+Parameter values (trained):
+Dict{Var, Union{Real, AbstractMatrix{<:Real}}}(Var("Frequency3_T%%2_before_sigmoid") => -0.6454960762563902, Var("Frequency3_T%%4_before_sigmoid") => 0.8997662078702102, Var("Frequency3_T%%1_before_sigmoid") => -1.3472553532262184, Var("Frequency3_E%%4_before_sigmoid") => -1.531834986558491, Var("Frequency3_E%%2_before_sigmoid") => 0.4946509467792219, Var("Frequency2_E%%0_before_sigmoid") => 0, Var("Frequency3_T%%3_before_sigmoid") => 0.00013974115300990797, Var("Frequency1_B%%0_before_sigmoid") => 0, Var("Frequency3_E%%1_before_sigmoid") => 0.8267402727622678, Var("Frequency3_E%%3_before_sigmoid") => 0.00013974115300988737, Var("Frequency1_R%%0_before_sigmoid") => 0)
+
+Saved Coq generator to /scratch/tjoa/Alea.jl/experiments/../tuning-output/v133_artifact/rbt/langderived/root_ty=Main.ColorKVTree.t/ty-sizes=Main.ColorKVTree.t-4-Main.Color.t-0/stack_size=0/intwidth=3/arbitrary_prims=true/mle/depth/uniform/0.1/epochs=1000/bound=0.0/trained_Generator.v
+
+Saving trained distribution...
+  0.009015585 seconds
+Saved metric dist to /scratch/tjoa/Alea.jl/experiments/../tuning-output/v133_artifact/rbt/langderived/root_ty=Main.ColorKVTree.t/ty-sizes=Main.ColorKVTree.t-4-Main.Color.t-0/stack_size=0/intwidth=3/arbitrary_prims=true/mle/depth/uniform/0.1/epochs=1000/bound=0.0/loss1_dist_depth_trained.csv
+
+
+2025-06-24T18:54:48.779
+Total time elapsed: 33 seconds, 776 milliseconds
