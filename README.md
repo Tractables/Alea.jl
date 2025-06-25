@@ -81,9 +81,10 @@ From a fresh state of the artifact, this should take less than 5 minutes,
 as the results are cached. To regenerate the results, re-run the above scripts
 after deleting the following directories, which should then take a few hours to
 run.
-- `experiments-output`
+- `tuning-output`
 - `lib/etna/data-artifact`
 - `lib/etna/figures-artifact`
+- `experiments-output`
 
 For a run, see [Troubleshooting](#troubleshooting) if errors occur. Upon
 success, the following files should be in `experiments-output`.
