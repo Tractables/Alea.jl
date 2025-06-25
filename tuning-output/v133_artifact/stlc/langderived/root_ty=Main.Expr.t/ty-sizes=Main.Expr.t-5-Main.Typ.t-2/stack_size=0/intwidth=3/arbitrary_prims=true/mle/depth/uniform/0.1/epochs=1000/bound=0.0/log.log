@@ -1,0 +1,44 @@
+2025-06-08T10:27:46.780 694a7e6c ["-f", "LangDerivedGenerator{STLC}(Main.Expr.t,Pair{Type,Integer}[Main.Expr.t=>5,Main.Typ.t=>2],0,3,true)", "Pair{MLELossConfig{STLC},Float64}[MLELossConfig{STLC}(depth,Uniform())=>0.1]", "1000", "0.0"]
+== Config ==
+TAG: v133_artifact
+LangDerivedGenerator{STLC}(Main.Expr.t, Pair{Type, Integer}[Main.Expr.t => 5, Main.Typ.t => 2], 0, 3, true)
+Pair{MLELossConfig{STLC}, Float64}[MLELossConfig{STLC}(depth, Uniform()) => 0.1]
+Epochs: 1000
+Bound: 0.0
+SEED: 0
+ARGS: -f LangDerivedGenerator{STLC}(Main.Expr.t,Pair{Type,Integer}[Main.Expr.t=>5,Main.Typ.t=>2],0,3,true) Pair{MLELossConfig{STLC},Float64}[MLELossConfig{STLC}(depth,Uniform())=>0.1] 1000 0.0
+
+Building generation computation graph...
+  7.41929271 seconds
+
+Building computation graph for MLELossConfig{STLC}(depth, Uniform())...
+  2.086879309 seconds
+
+ADNodes of interest (initial):
+Dict("Frequency2_TFun%%2" => 0.5, "Frequency4_Var%%2" => 0.5, "Frequency2_TBool%%1" => 0.5, "Frequency4_Var%%3" => 0.5, "Frequency3_Bool%%0" => 0.5, "Frequency4_App%%4" => 0.5, "Frequency4_Bool%%3" => 0.5, "Frequency4_Var%%1" => 0.5, "Frequency3_Var%%0" => 0.5, "Frequency4_App%%2" => 0.5, "Frequency4_App%%3" => 0.5, "Frequency4_Abs%%3" => 0.5, "Frequency4_Var%%5" => 0.5, "Frequency4_Bool%%1" => 0.5, "Frequency4_Abs%%2" => 0.5, "Frequency4_Bool%%4" => 0.5, "Frequency4_Abs%%1" => 0.5, "Frequency4_Var%%4" => 0.5, "Frequency4_Bool%%2" => 0.5, "Frequency4_Bool%%5" => 0.5, "Frequency2_TFun%%1" => 0.5, "Frequency4_App%%5" => 0.5, "Frequency4_Abs%%4" => 0.5, "Frequency2_TBool%%2" => 0.5, "Frequency1_TBool%%0" => 0.5, "Frequency4_App%%1" => 0.5, "Frequency4_Abs%%5" => 0.5)
+
+Parameter values (initial):
+Dict{Var, Union{Real, AbstractMatrix{<:Real}}}(Var("Frequency4_App%%1_before_sigmoid") => 0, Var("Frequency4_Bool%%4_before_sigmoid") => 0, Var("Frequency2_TFun%%1_before_sigmoid") => 0, Var("Frequency4_Bool%%1_before_sigmoid") => 0, Var("Frequency4_App%%4_before_sigmoid") => 0, Var("Frequency4_Var%%5_before_sigmoid") => 0, Var("Frequency4_Var%%4_before_sigmoid") => 0, Var("Frequency2_TFun%%2_before_sigmoid") => 0, Var("Frequency4_Abs%%4_before_sigmoid") => 0, Var("Frequency4_Var%%2_before_sigmoid") => 0, Var("Frequency4_Bool%%2_before_sigmoid") => 0, Var("Frequency4_Abs%%1_before_sigmoid") => 0, Var("Frequency4_Var%%1_before_sigmoid") => 0, Var("Frequency4_Abs%%3_before_sigmoid") => 0, Var("Frequency3_Var%%0_before_sigmoid") => 0, Var("Frequency4_Abs%%5_before_sigmoid") => 0, Var("Frequency4_App%%3_before_sigmoid") => 0, Var("Frequency2_TBool%%1_before_sigmoid") => 0, Var("Frequency4_App%%5_before_sigmoid") => 0, Var("Frequency4_App%%2_before_sigmoid") => 0, Var("Frequency2_TBool%%2_before_sigmoid") => 0, Var("Frequency1_TBool%%0_before_sigmoid") => 0, Var("Frequency3_Bool%%0_before_sigmoid") => 0, Var("Frequency4_Bool%%3_before_sigmoid") => 0, Var("Frequency4_Var%%3_before_sigmoid") => 0, Var("Frequency4_Bool%%5_before_sigmoid") => 0, Var("Frequency4_Abs%%2_before_sigmoid") => 0)
+
+Saved Coq generator to /scratch/tjoa/Alea.jl/experiments/../tuning-output/v133_artifact/stlc/langderived/root_ty=Main.Expr.t/ty-sizes=Main.Expr.t-5-Main.Typ.t-2/stack_size=0/intwidth=3/arbitrary_prims=true/mle/depth/uniform/0.1/epochs=1000/bound=0.0/initial_Generator.v
+
+Saving initial distribution...
+  0.100629238 seconds
+Saved metric dist to /scratch/tjoa/Alea.jl/experiments/../tuning-output/v133_artifact/stlc/langderived/root_ty=Main.Expr.t/ty-sizes=Main.Expr.t-5-Main.Typ.t-2/stack_size=0/intwidth=3/arbitrary_prims=true/mle/depth/uniform/0.1/epochs=1000/bound=0.0/loss1_dist_depth_initial.csv
+
+
+ADNodes of interest (trained):
+Dict("Frequency2_TFun%%2" => 0.5, "Frequency4_Var%%2" => 0.5461231530765445, "Frequency2_TBool%%1" => 0.5, "Frequency4_Var%%3" => 0.44034325311719924, "Frequency3_Bool%%0" => 0.5, "Frequency4_App%%4" => 0.6595299622087493, "Frequency4_Bool%%3" => 0.4403432531171994, "Frequency4_Var%%1" => 0.6467933354583012, "Frequency3_Var%%0" => 0.5, "Frequency4_App%%2" => 0.3590190587048325, "Frequency4_App%%3" => 0.5146987927467761, "Frequency4_Abs%%3" => 0.5885369366206035, "Frequency4_Var%%5" => 0.14390783516374933, "Frequency4_Bool%%1" => 0.6467933354583019, "Frequency4_Abs%%2" => 0.5296739304645363, "Frequency4_Bool%%4" => 0.2984127881812885, "Frequency4_Abs%%1" => 0.2980647466470709, "Frequency4_Var%%4" => 0.2984127881812886, "Frequency4_Bool%%2" => 0.5461231530765447, "Frequency4_Bool%%5" => 0.14390783516374928, "Frequency2_TFun%%1" => 0.5, "Frequency4_App%%5" => 0.7711742342750816, "Frequency4_Abs%%4" => 0.6336191746634486, "Frequency2_TBool%%2" => 0.5, "Frequency1_TBool%%0" => 0.5, "Frequency4_App%%1" => 0.2980647466470709, "Frequency4_Abs%%5" => 0.6679041173827224)
+
+Parameter values (trained):
+Dict{Var, Union{Real, AbstractMatrix{<:Real}}}(Var("Frequency4_App%%1_before_sigmoid") => -0.8565304345479084, Var("Frequency4_Bool%%4_before_sigmoid") => -0.8548674904768053, Var("Frequency2_TFun%%1_before_sigmoid") => 0, Var("Frequency4_Bool%%1_before_sigmoid") => 0.6049734861994162, Var("Frequency4_App%%4_before_sigmoid") => 0.6612002758508707, Var("Frequency4_Var%%5_before_sigmoid") => -1.7832049784650625, Var("Frequency4_Var%%4_before_sigmoid") => -0.8548674904768049, Var("Frequency2_TFun%%2_before_sigmoid") => 0, Var("Frequency4_Abs%%4_before_sigmoid") => 0.5477748042505298, Var("Frequency4_Var%%2_before_sigmoid") => 0.18501860643648488, Var("Frequency4_Bool%%2_before_sigmoid") => 0.18501860643648574, Var("Frequency4_Abs%%1_before_sigmoid") => -0.8565304345479084, Var("Frequency4_Var%%1_before_sigmoid") => 0.6049734861994135, Var("Frequency4_Abs%%3_before_sigmoid") => 0.3579204335785201, Var("Frequency3_Var%%0_before_sigmoid") => 0, Var("Frequency4_Abs%%5_before_sigmoid") => 0.698720896097033, Var("Frequency4_App%%3_before_sigmoid") => 0.0588121170573697, Var("Frequency2_TBool%%1_before_sigmoid") => 0, Var("Frequency4_App%%5_before_sigmoid") => 1.2149534672257727, Var("Frequency4_App%%2_before_sigmoid") => -0.5796242483163521, Var("Frequency2_TBool%%2_before_sigmoid") => 0, Var("Frequency1_TBool%%0_before_sigmoid") => 0, Var("Frequency3_Bool%%0_before_sigmoid") => 0, Var("Frequency4_Bool%%3_before_sigmoid") => -0.23976910030511275, Var("Frequency4_Var%%3_before_sigmoid") => -0.23976910030511303, Var("Frequency4_Bool%%5_before_sigmoid") => -1.783204978465063, Var("Frequency4_Abs%%2_before_sigmoid") => 0.11883537254916038)
+
+Saved Coq generator to /scratch/tjoa/Alea.jl/experiments/../tuning-output/v133_artifact/stlc/langderived/root_ty=Main.Expr.t/ty-sizes=Main.Expr.t-5-Main.Typ.t-2/stack_size=0/intwidth=3/arbitrary_prims=true/mle/depth/uniform/0.1/epochs=1000/bound=0.0/trained_Generator.v
+
+Saving trained distribution...
+  0.082005119 seconds
+Saved metric dist to /scratch/tjoa/Alea.jl/experiments/../tuning-output/v133_artifact/stlc/langderived/root_ty=Main.Expr.t/ty-sizes=Main.Expr.t-5-Main.Typ.t-2/stack_size=0/intwidth=3/arbitrary_prims=true/mle/depth/uniform/0.1/epochs=1000/bound=0.0/loss1_dist_depth_trained.csv
+
+
+2025-06-08T10:28:47.036
+Total time elapsed: 1 minute, 256 milliseconds
