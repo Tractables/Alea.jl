@@ -243,7 +243,7 @@ def handle_figure3_plots(config: Config, er: ExperimentResult) -> None:
     log_dir = os.path.dirname(figure3_log_path)
 
     feature_dist_pattern = os.path.join(log_dir, f'feature_dist_feature_spec_entropy_train_feature=true_freq=1-spb={config.args.fig3_samples_per_batch}_prop=wellTyped_feature=typecheck_ft.png')
-    unique_curves_pattern = os.path.join(log_dir, f'unique_curves_feature_spec_entropy_train_feature=true_freq=1-spb={config.args.fig3_samples_per_batch}_prop=wellTyped_feature=typecheck_ft.svg')
+    unique_curves_pattern = os.path.join(log_dir, f'unique_curves_feature_spec_entropy_train_feature=true_freq=1-spb={config.args.fig3_samples_per_batch}_prop=wellTyped_feature=typecheck_ft.png')
     
     if config.args.verbose:
         print(f"Looking for plots in directory: {log_dir}")
