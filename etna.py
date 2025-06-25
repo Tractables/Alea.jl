@@ -180,7 +180,7 @@ def run_etna(args: argparse.Namespace):
     if args.verbose:
         print(f"Logging to {log_file}")
 
-    run_command("python3 qc-checker.py use_new_qc", cwd=etna_dir, log_file=log_file)
+    # run_command("python3 qc-checker.py use_new_qc", cwd=etna_dir, log_file=log_file)
     run_command("python3 bounds-switch.py to_max", cwd=etna_dir, log_file=log_file)
 
 
