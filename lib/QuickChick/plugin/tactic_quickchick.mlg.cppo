@@ -1,0 +1,239 @@
+{
+(*
+
+THIS FILE IS PREPROCESSED USING cppo
+MAKE SURE TO EDIT THE .cppo SOURCE OF THIS FILE RATHER THAN THE GENERATED RESULT
+
+*)
+
+  open Stdarg
+  open Ltac_plugin
+  open Error
+  open Pp
+}
+
+DECLARE PLUGIN "coq-quickchick.plugin"
+
+{
+let merge_sound =
+  let rec get_hyps (s : Evd.evar_map) (c : EConstr.constr) =
+    if EConstr.isProd s c then
+      let (x,t1,t2) = EConstr.destProd s c in
+      (x,t1) :: get_hyps s t2
+    else []
+  in 
+  Proofview.Goal.enter begin fun gl ->
+    let c = Proofview.Goal.concl gl in
+    let s = Proofview.Goal.sigma gl in
+    let to_intro = get_hyps s c in
+    let rec calc_ids acc opts =
+      match opts with
+      | [] -> begin match acc with
+              | to_ind::rest -> (to_ind, List.rev acc)
+              | _ -> failwith "No product/merge_sound"
+              end
+      | (nb,_) :: nbs ->
+         begin match Context.binder_name nb with
+         | Names.Name id -> calc_ids (id :: acc) nbs
+         | Names.Anonymous -> calc_ids (Names.Id.of_string "H" :: acc) nbs
+         end in
+    match calc_ids [] to_intro with
+    | (_to_induct, opts) ->
+       Tactics.intros_using_then opts (fun ids ->
+           Tacticals.tclTHENLIST
+             [ Tacticals.onLastHyp Tactics.simplest_elim
+             ; Tactics.intros 
+         ])
+  end;;
+
+let remember_induct h =
+  Proofview.Goal.enter begin fun gl ->
+    let s = Proofview.Goal.sigma gl in
+    let env = Proofview.Goal.env gl in
+    let cn = EConstr.mkVar h in
+    Tacticals.tclTYPEOFTHEN cn (fun evm ct -> 
+        msg_debug (str "Here: " ++ Printer.pr_constr_env env s (EConstr.to_constr s ct) ++ fnl());
+        let to_remember = 
+          if EConstr.isApp s ct then begin
+              let (ctr, cs) = EConstr.destApp s ct in
+              let to_remember = ref [] in
+              Array.iter (fun cx ->
+                  if EConstr.isApp s cx then
+                    to_remember := cx :: !to_remember
+                  else if EConstr.isConstruct s cx then
+                    to_remember := cx :: !to_remember
+                  else msg_debug (str "All good" ++ fnl ())) cs;
+              !to_remember
+            end
+          else failwith "Not App" in
+        let eqpat = CAst.make @@ Namegen.IntroAnonymous in 
+        let cl =
+          { Locus.onhyps = None
+          ; Locus.concl_occs = Locus.AllOccurrences } in 
+        let rec do_remembers (pats : EConstr.constr list) =
+          match pats with
+          | [] ->
+#if COQ_VERSION >= (8, 19, 0)
+            Induction.induction false None cn None None
+#else
+            Tactics.induction false None cn None None
+#endif
+          | p :: ps ->
+             Tacticals.tclTHEN
+#if COQ_VERSION >= (8, 18, 0)             
+                   (Tactics.letin_pat_tac false (Some (true, eqpat)) (Names.Name.Anonymous) (Some s, p) cl)
+#else
+                   (Tactics.letin_pat_tac false (Some (true, eqpat)) (Names.Name.Anonymous) (s, p) cl)
+#endif                 
+                   (do_remembers ps) in
+        msg_debug (int (List.length to_remember) ++ fnl ());
+        do_remembers to_remember
+      )
+    end 
+                
+let quickchick_goal =
+  Proofview.Goal.enter begin fun gl ->
+
+    (* Convert goal to a constr_expr *)
+    let c = Proofview.Goal.concl gl in
+    let e = Proofview.Goal.env gl in
+    let evd = Evd.from_env e in
+
+    (* Make an evar with the goal as the type *)
+    let evd, evar = Evarutil.new_pure_evar (Environ.named_context_val e) evd c in
+
+    Printf.printf "So far so good\n"; flush stdout;
+    
+    (* Externalize it *)
+#if COQ_VERSION >= (8, 17, 0)
+    let ct = Constrextern.extern_constr e evd (EConstr.mkEvar (evar, SList.empty)) in
+#else
+    let ct = Constrextern.extern_constr e evd (EConstr.mkEvar (evar, [])) in
+#endif
+
+    (* Construct : show (quickCheck (_ : ct)) *)
+    let  qct = CAst.make @@ Constrexpr.CApp (QuickChick.quickCheck, [ct, None]) in
+    let sqct = CAst.make @@ Constrexpr.CApp (QuickChick.show, [(qct,None)]) in
+
+    Printf.printf "So far so good2\n"; flush stdout;
+
+    (* From here on I've tried a couple of things. 
+       Calling run_test directly with qct. Fails.
+       Internalize here before calling define and run, fails.
+
+       It always seems to fail in the 'interp' phase, with an 
+       unknown existential variable error. So I'm probably doing something
+       stupid with the evar maps *)
+    let evd, to_run = Constrintern.interp_open_constr e evd sqct in
+
+    Printf.printf "So far so good 2.5\n"; flush stdout;
+    
+    QuickChick.define_and_run to_run e evd;
+
+    Printf.printf "So far so good3\n"; flush stdout;
+
+    (* TODO: This whole block doesn't look very monadic... *)
+    Tacticals.tclIDTAC
+  end
+
+    (*
+    (* Admit a constant with that type *)
+    let tmpid = QuickChick.fresh_name "temporary_constant" in
+    let _interp_st = Vernacentries.interp (CAst.make @@ Vernacexpr.VernacExpr ([],
+      (* TODO: NoDischarge or DoDischarge? *)
+      Vernacexpr.VernacAssumption ((NoDischarge, Decl_kinds.Conjectural),
+                        NoInline,
+                        [
+                          (false,
+                           (
+                             [CAst.make tmpid, None]
+                           ,
+                             ct
+                           )
+                          )
+                        ]
+                       ))) in
+
+    let s = QuickChick.runTest @@ CAst.make @@
+      Constrexpr.CApp (QuickChick.quickCheck, [CAst.make @@ CRef (Libnames.qualid_of_ident tmpid,None), None]) in
+    (* I need to create an existential of type Checkable ct, and then
+       call QuickChick.quickChick on that in the ast, before running
+       QuickChick.runTest on the constr_expr. *)
+
+    
+    (*
+
+       HACK (there *has* to be a better way): 
+         (\x : Checkable ct -> x) _ *)
+
+    let base = Names.Id.of_string "x" in
+    let is_visible_name id =
+      try
+        ignore (Nametab.locate (Libnames.qualid_of_ident id));
+        true
+      with Not_found -> false
+    in
+    (** Safe fresh name generation. *)
+    let xid = Namegen.next_ident_away_from base is_visible_name in
+
+    let binder_list = [CLocalAssum ([CAst.make @@ Names.Name xid], Default Explicit, ct)]  in
+    let f_body = CAst.make @@ CRef (CAst.make @@ Libnames.Ident xid,None) in
+    let f = mkCLambdaN binder_list f_body in
+    let hack_value = mkAppC (f , [ CAst.make @@ CEVarHole (None, Misctypes.IntroAnonymous, None) ] ) in
+     *)
+(*
+
+    (* Refactor - needs to see internals... *)
+    let base = Names.id_of_string "x" in
+    let is_visible_name id =
+      try
+        ignore (Nametab.locate (Libnames.qualid_of_ident id));
+        true
+      with Not_found -> false
+    in
+    (** Safe fresh name generation. *)
+    let xid = Namegen.next_ident_away_from base is_visible_name in
+
+
+    let f_body = mkAppC (QuickChick.show, [mkAppC (QuickChick.quickCheck, [mkAppC (QuickChick.mk_ref "checker", [ CRef (Ident ((Loc.dummy_loc, xid)),None) ])])]) in
+    let f = mkCLambdaN Loc.dummy_loc bind_list f_body in
+
+    let env = Global.env () in
+    let evd = Evd.from_env env in
+    let (cf,evd) = Constrintern.interp_constr env evd f in
+
+    let actual_term = Constr.mkApp (cf, Array.of_list [c]) in
+ *)
+
+
+
+(*
+    let concl = Proofview.Goal.concl gl in
+    let sigma = Tacmach.project gl in
+    let hyps = named_context_val (Proofview.Goal.env gl) in
+    let store = Proofview.Goal.extra gl in
+    let env = Proofview.Goal.env gl in
+    let () = if check && mem_named_context_val id hyps then
+      errorlabstrm "Tactics.introduction"
+        (str "Variable " ++ pr_id id ++ str " is already declared.")
+    in
+    match kind_of_term (whd_evar sigma concl) with
+    | Prod (_, t, b) -> unsafe_intro env store (LocalAssum (id, t)) b
+    | LetIn (_, c, t, b) -> unsafe_intro env store (LocalDef (id, c, t)) b
+    | _ -> raise (RefinerError IntroNeedsProduct)
+  end
+ *)
+
+}
+
+TACTIC EXTEND quickchick
+  | ["quickchick"] -> { quickchick_goal }
+END
+
+TACTIC EXTEND merge_sound_core
+  | ["merge_sound_core"] -> { merge_sound }
+END
+
+TACTIC EXTEND remember_induct
+  | ["remember_induct" ident(h)] -> { remember_induct h }
+END
