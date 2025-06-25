@@ -242,6 +242,13 @@ function cmd_out(cmd)
     String(take!(io))
 end
 
+function cmd_out_no_stderr(cmd)
+    io = IOBuffer()
+    run(pipeline(cmd, stdout=io, stderr=devnull))
+    String(take!(io))
+end
+
+
 thousandths(n) = if isnan(n) "nan" else Integer(round(n, digits=3) * 1000) end
 hundredths(n) = if isnan(n) "nan" else Integer(round(n * 100)) end
 

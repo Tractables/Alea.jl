@@ -116,7 +116,7 @@ rs = RunState(Valuation(), Dict{String,ADNode}(), open(log_path, "w"), out_dir, 
 
 commit =
     try
-        strip(cmd_out(Cmd(`git rev-parse --short HEAD`, dir=@__DIR__)))
+        strip(cmd_out_no_stderr(Cmd(`git rev-parse --short HEAD`, dir=@__DIR__)))
     catch
         "unknown_commit"
     end
