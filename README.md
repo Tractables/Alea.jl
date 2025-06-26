@@ -1,12 +1,33 @@
 # Artifact for Tuning Random Generators
 
-This document describes how to reproduce the figures in the paper. To make our
-systems reusable, we also include "tour"-style tutorials of Loaded Dice, which
-are described in [DOCUMENTATION.md](./DOCUMENTATION.md).
+# Introduction
 
-# Docker
+This is the artifact for "Tuning Random Generators: Property-Based Testing as
+Probabilistic Programming." The paper proposes probabilistic programming
+techniques to improve the distributions of random generators used for
+property-based testing.
+
+The artifact is distributed as a `TODO-COMPRESS` file containing the following
+main components:
+- This README
+- The source for *Loaded Dice*, the probabilistic progamming language we present
+  for the purpose for writing generators.
+- "Tour"-style tutorials of Loaded Dice, which are described in
+  [DOCUMENTATION.md](./DOCUMENTATION.md), and example tuning of generators.
+- A Docker image from which the figures and benchmarks can be reproduced.
+
+This document describes how to reproduce the figures in the paper. To make our
+systems reusable, we also include 
+
+# Instructions (Docker)
 
 Install Docker. To build the container:
+
+```
+docker load -i artifact.tar
+```
+
+docker run --name artifact-run artifact bash -c "./run.py --all --parallel; ./etna.py"
 
 ```
 docker build -t artifact .
@@ -39,54 +60,8 @@ TODO_ARTIFACT: use the below command instead, which also runs etna, once we can 
 docker run --name artifact-run artifact bash -c "./run.py --all --parallel && ./etna.py"
 ```
 
-# Manual
+### Upon success
 
-## Julia setup
-
-Install Julia 1.10. Then run the following from the root of the directory:
-
-```
-julia --project -e 'using Pkg; Pkg.instantiate()'
-julia --project -e 'using Pkg; Pkg.develop(path="lib/IRTools.jl")'
-julia --project -e 'using Pkg; Pkg.develop(path="lib/CUDD.jl")'
-julia --project -e 'using Pkg; Pkg.develop(path="lib/Dice.jl")'
-```
-
-## Python setup
-
-Install Python 3.10.13
-Install numpy, pandas 1.5.3, and matplotlib
-
-install benchtool:
-cd lib/etna/tool && pip install -e .
-
-## Coq setup
-
-Install opam, then:
-
-```bash
-opam switch create 4.10.0+afl
-opam pin coq 8.15.0
-```
-
-# Reproducing figures
-
-From the repository root, run:
-```bash
-./run.py --all --parallel
-./etna.py
-```
-
-From a fresh state of the artifact, this should take less than 5 minutes,
-as the results are cached. To regenerate the results, re-run the above scripts
-after deleting the following directories, which should then take a few hours to
-run.
-- `tuning-output`
-- `lib/etna/data-artifact`
-- `lib/etna/figures-artifact`
-- `experiments-output`
-
-For a run, see [Troubleshooting](#troubleshooting) if errors occur. Upon
 success, the following files should be in `experiments-output`.
 ```
 fig2_rbt_type_based_linear.png  
@@ -139,7 +114,19 @@ BST Type-based         │              3.2x │                 5.0x │       
 RBT Type-based         │              5.1x │                 7.0x │        3m30s
 STLC Type-based        │              5.0x │                 3.3x │        7m46s
 STLC Bespoke           │              2.5x │                 2.0x │         9m5s
+
+ Generator & Workload  │  Speedup vs Etna  │  Speedup vs Untuned  │  Train Time 
+────────────────────────────────────────────────────────────────────────────────
+BST Type-based         │              3.8x │                 6.1x │        
+RBT Type-based         │              5.3x │                 7.2x │        
+STLC Type-based        │              5.7x │                 3.0x │        
+STLC Bespoke           │              2.6x │                 2.0x │        
+
 ```
+
+# Reusability guide
+
+
 
 # Troubleshooting
 
@@ -161,3 +148,52 @@ Also see `./run.py --help`.
 ## `etna.py`
 
 To troubleshoot an error, re-run with `./etna.py --verbose`.
+
+# Instructions (Manual)
+
+## Julia setup
+
+Install Julia 1.10. Then run the following from the root of the directory:
+
+```
+julia --project -e 'using Pkg; Pkg.instantiate()'
+julia --project -e 'using Pkg; Pkg.develop(path="lib/IRTools.jl")'
+julia --project -e 'using Pkg; Pkg.develop(path="lib/CUDD.jl")'
+julia --project -e 'using Pkg; Pkg.develop(path="lib/Dice.jl")'
+```
+
+## Python setup
+
+Install Python 3.10.13
+Install numpy, pandas 1.5.3, and matplotlib
+
+install benchtool:
+cd lib/etna/tool && pip install -e .
+
+## Coq setup
+
+Install opam, then:
+
+```bash
+opam switch create 4.10.0+afl
+opam pin coq 8.15.0
+```
+
+# Reproducing figures
+
+From the repository root, run:
+```bash
+./run.py --all --parallel
+./etna.py
+```
+
+From a fresh state of the artifact, this should take less than 5 minutes,
+as the results are cached. To regenerate the results, re-run the above scripts
+after deleting the following directories, which should then take a few hours to
+run.
+- `tuning-output`
+- `lib/etna/data-artifact`
+- `lib/etna/figures-artifact`
+- `experiments-output`
+
+For a run, see [Troubleshooting](#troubleshooting) if errors occur. Upon
