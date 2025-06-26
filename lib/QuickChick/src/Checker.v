@@ -118,12 +118,12 @@ Definition example :=
           (fun '(x, tt) => gen x) (
 @Predicate (CtxBind bool (CtxBind nat EmptyCtx)) (fun '(y, (x, tt)) => test x y))).
 
-Fixpoint run {A: Ctx} (cprop: CProp A) : Checker :=
+(* Fixpoint run {A: Ctx} (cprop: CProp A) : Checker :=
 match cprop with
 | Predicate C p => (p (interpCtx C))
 | ForAll _ _ _ cprop' => run cprop' 
 end
-.
+. *)
 
 Class Checkable (A : Type) : Type :=
   {
@@ -211,7 +211,7 @@ Definition shrinkingNondet {prop A : Type} `{Checkable prop} (n : nat)
   fmap (fun x => MkProp (repeatRose n (joinRose (fmapRose unProp x))))
        (promote (props pf shrinker x0)).
 
-Definition callback {prop : T ype} `{Checkable prop}
+Definition callback {prop : Type} `{Checkable prop}
            (cb : Callback) : prop -> Checker :=
   mapTotalResult (fun r => addCallback r cb).
 
