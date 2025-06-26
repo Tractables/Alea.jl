@@ -539,8 +539,8 @@ Fixpoint fuzzLoopAux {A} (fuzz_fuel : nat) (st : State)
                                  ++ (show ndt) ++ " discards)")%string in
         Failure (nst + 1 + zero) numShrinks ndt r size message (summary st) "Falsified!"
     | None =>
-      match clear_queues fuzz_fuel with
-      | true => fuzzLoopAux fuzz_fuel' (updDiscTests st S) nil nil nil nil randoms' nil gen fuzz print prop
+      match clear_queues fuel with
+      | true => fuzzLoopAux fuel' (updDiscTests st S) nil nil nil nil randoms' nil gen fuzz print prop
       | _ => 
         if is_interesting then
           (* Interesting (new path), but discard. Put in discard queue *)

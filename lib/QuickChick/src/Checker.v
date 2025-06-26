@@ -90,6 +90,41 @@ Record QProp : Type :=
 
 Definition Checker : Type := G QProp.
 
+
+Inductive Ctx :=
+| EmptyCtx
+| CtxBind : Type -> Ctx -> Ctx.
+
+Fixpoint interpCtx (C : Ctx) : Type :=
+  match C with
+  | EmptyCtx => unit
+  | CtxBind t C => t * interpCtx C
+  end.
+  
+Inductive CProp : Ctx -> Type :=
+| ForAll : forall A C,
+    (interpCtx C -> G A) ->
+    CProp (CtxBind A C) -> CProp C
+| Predicate : forall C,
+    (interpCtx C -> Checker) -> CProp C.
+
+Axiom arb : G nat.
+Axiom gen : nat -> G bool.
+Axiom test : nat -> bool -> Checker.
+
+Definition example :=
+@ForAll _ EmptyCtx (fun tt => arb) (
+@ForAll _ (CtxBind nat EmptyCtx)
+          (fun '(x, tt) => gen x) (
+@Predicate (CtxBind bool (CtxBind nat EmptyCtx)) (fun '(y, (x, tt)) => test x y))).
+
+Fixpoint run {A: Ctx} (cprop: CProp A) : Checker :=
+match cprop with
+| Predicate C p => (p (interpCtx C))
+| ForAll _ _ _ cprop' => run cprop' 
+end
+.
+
 Class Checkable (A : Type) : Type :=
   {
     checker : A -> Checker
@@ -176,7 +211,7 @@ Definition shrinkingNondet {prop A : Type} `{Checkable prop} (n : nat)
   fmap (fun x => MkProp (repeatRose n (joinRose (fmapRose unProp x))))
        (promote (props pf shrinker x0)).
 
-Definition callback {prop : Type} `{Checkable prop}
+Definition callback {prop : T ype} `{Checkable prop}
            (cb : Callback) : prop -> Checker :=
   mapTotalResult (fun r => addCallback r cb).
 
@@ -264,16 +299,6 @@ Definition forAllShrinkShow {A prop : Type} {_ : Checkable prop}
   bindGen gen (fun x =>
                  shrinking shrinker x (fun x' =>
                                          printTestCase (show' x') (pf x'))).
-
-                                                                                 
-Definition forAllShrinkShowMaybe {A prop : Type} {_ : Checkable prop}
-(gen : G (option A)) (shrinker : A -> list A) (show' : A -> string) (pf : A -> prop) : Checker :=
-bindGen gen (fun mx =>
-      match mx with
-      | Some x =>  shrinking shrinker x (fun x' => printTestCase (show' x') (pf x'))
-      | None => checker tt
-      end
-   ).
 
 Global Instance testFun {A prop : Type} `{Show A}
        `{Arbitrary A} `{_ : Checkable prop} : Checkable (A -> prop) :=

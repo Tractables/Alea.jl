@@ -68,7 +68,6 @@ Class Enum (A : Type) := { enum : E A }.
 Class Sized (A : Type) :=
   { size : A -> nat }.
 
-  
 (* ZP: This is not longer usefull *) 
 (* 
 (** * Sizes of types *)
