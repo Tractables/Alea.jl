@@ -193,7 +193,7 @@ relatively machine-dependent.
 
 # Reusability guide
 
-TODO_ARTIFACT: some intro sentence that shows we take this seriously
+We provide documentation, tutorials, and source code to support researchers and practitioners who wish to reuse or extend our work on tuning random generators.
 
 See [DOCUMENTATION](./DOCUMENTATION.md) for tutorials and examples of tuning
 generators.
