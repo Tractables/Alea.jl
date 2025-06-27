@@ -7,38 +7,94 @@ Probabilistic Programming." The paper proposes probabilistic programming
 techniques to improve the distributions of random generators used for
 property-based testing.
 
-The artifact is distributed as a `TODO_ARTIFACT` file containing the following
-main components:
-- This README.
+The artifact is distributed as a `.tar` file containing the following main
+components:
+- This `README.md`.
 - The source for *Loaded Dice*, the probabilistic progamming language we present
   for the purpose for writing generators.
-- "Tour"-style tutorials of Loaded Dice, which are described in
+- Tour-style tutorials of Loaded Dice, which are described in
   [DOCUMENTATION.md](./DOCUMENTATION.md), and example tuning of generators.
 - A Docker image from which the figures and benchmarks can be reproduced..
 
+The claims in the paper are as follows:
+1. Tuning can change a generator's distribution to approximate a target distribution.
+   - This is supported by the artifact as it reproduces Figures 2 and 12b, which show generator distributions before and after tuning for a target distribution.
+2. Specification entropy with regularization can increase the unique and valid
+  generations, significantly more so than tuning for validity or
+  entropy alone.
+   - This is supported by the artifact as it reproduces Figures 3 and 4, which
+    show cumulative unique generations before and after tuning an STLC generator
+    and RBT generator for specification entropy with regularation. Figure 4 also
+    shows that specification entropy results in more unique, valid generations
+    than tuning for validity or entropy alone.
+3. Regularization via bounded weights can greatly increase the unique and valid generations when tuning for specification entropy.
+   - This is supported by the artifact as it reproduces Figure 10, as it tunes an RBT generator for specification entropy with and without regularization, and shows that regularization results in more unique and valid generations.
+4. Tuning generators can notably improve bug-finding performance.
+   - This is supported by the artifact as is reproduces our experiments on the Etna benchmark, reproducing Figures 11 and 12 and Table 1, which show that bug-finding speed of tuned generators outperforms both the untuned versions and their analogous versions from Etna.
+
 # Hardware Dependencies
 
-TODO_ARTIFACT
+There are two main tasks performed by the artifact, with varying computational requirements:
+1. **Running Etna.**  This has modest hardware requirements. It is recommended but not required to run this on a machine with many available cores, as these benchmarks are set up to automatically parallelize to complete faster.
+2. **Tuning generators.** Tuning generators may take a significant amount of RAM (16 GB or more is recommended), and takes several hours for some figures (many samples and epochs are taken to show the graphs in high detail.) To ameliorate this, the artifact takes two measures:
+      1. A `--fast` flag can be passed to the script for tuning generators (`run.py`), which performs more modest versions of the experiments.
+      2. Tuning generators is deterministic as it uses seeded randomness. Thus, we include the results from previous tunings, which can be used instead for running Etna benchmarks.
 
-# Getting Started
+More detail on employing the workarounds described follows in the instructions below.
+
+# Getting Started (Docker)
+
+> Note: using the included Docker image is recommended, but if one wishes to set up their environment themself, see [Instructions (Manual)](#instructions-manual).
+
+First, install Docker: https://www.docker.com/get-started/.
+
+Load the Docker image from `artifact-image.tar`:
+```bash
+docker load -i artifact-image.tar
+```
+
+> Aside: Should it be necessary, a Docker image can be rebuilt from `docker build -t artifact-image .`
+
+Now, start and enter a container with:
+```bash
+docker run -it --name artifact-container artifact-image bash
+```
+
+From within the container, run the following to "kick-the-tires." This runs all parts of the artifact, using previously cached results, and should take less than five minutes.
+```bash
+./run.py --all --parallel
+./etna.py
+```
+
+If either command fails, see [Troubleshooting](#troubleshooting). Hopefully, all went well, in which case you can exit the docker container, then copy the results with:
+
+```bash
+docker cp artifact-run:/app/experiments-output ./experiments-output-kick-tires
+```
+
+We explain what's happening in the commands above, and how to interpret the results, in the detailed instructions below.
 
 
+# Detailed Instructions
 
-#
+We first give an overview of how the artifact is structured and caches results in [Artifact structure](#artifact-structure). We then detail how to run the artifact to generate fresh results in [Running the artifact](#running-the-artifact). We then explain how to interpret results with respect to the paper's claims in [Interpreting results](#interpreting-results).
+
+## Artifact structure
+
+- `tuning-output`
+- `lib/etna/data-artifact`
+- `lib/etna/figures-artifact`
+- `experiments-output`
+
+## Running the artifact
+
+## Interpreting results
 
 
-# Instructions (Docker)
-
-Install Docker. To build the container:
+docker run --name artifact-run artifact-image bash -c "./run.py --all --parallel; ./etna.py"
 
 ```
-docker load -i artifact.tar
-```
-
-docker run --name artifact-run artifact bash -c "./run.py --all --parallel; ./etna.py"
-
-```
-docker build -t artifact .
+docker build -t artifact-image .
 ```
 
 We have committed results from training and Etna to allow for a "kick-the-tires"
@@ -134,7 +190,12 @@ STLC Bespoke           │              2.6x │                 2.0x │       
 
 # Reusability guide
 
+TODO_ARTIFACT: some intro sentence that shows we take this seriously
 
+See [DOCUMENTATION](./DOCUMENTATION.md) for tutorials and examples of tuning
+generators.
+
+The source code of the probabilistic programming system used in this artifact is included, documented, and tested at [`lib/Dice.jl`](./lib/Dice.jl/). It is under active development here: https://github.com/Tractables/Alea.jl.
 
 # Troubleshooting
 
@@ -157,7 +218,7 @@ Also see `./run.py --help`.
 
 To troubleshoot an error, re-run with `./etna.py --verbose`.
 
-# Instructions (Manual)
+# Setup (Manual)
 
 ## Julia setup
 
@@ -186,22 +247,3 @@ Install opam, then:
 opam switch create 4.10.0+afl
 opam pin coq 8.15.0
 ```
-
-# Reproducing figures
-
-From the repository root, run:
-```bash
-./run.py --all --parallel
-./etna.py
-```
-
-From a fresh state of the artifact, this should take less than 5 minutes,
-as the results are cached. To regenerate the results, re-run the above scripts
-after deleting the following directories, which should then take a few hours to
-run.
-- `tuning-output`
-- `lib/etna/data-artifact`
-- `lib/etna/figures-artifact`
-- `experiments-output`
-
-For a run, see [Troubleshooting](#troubleshooting) if errors occur. Upon
