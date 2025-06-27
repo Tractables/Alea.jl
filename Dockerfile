@@ -69,7 +69,8 @@ COPY requirements.txt .
 RUN /root/.pyenv/versions/3.10.12/bin/python3.10 -m venv /venv
 ENV VIRTUAL_ENV=/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-RUN pip install pandas==1.5.3 numpy==1.22.4 scipy==1.10.1 seaborn
+RUN pip install pandas==1.5.3 numpy==1.22.4 scipy==1.10.1 seaborn dash 
+RUN pip install -r lib/etna/tool/requirements.txt
 RUN cd lib/etna/tool && pip install -e .
 RUN echo 'source /venv/bin/activate' >> /root/.bashrc
 

@@ -72,8 +72,8 @@ If either command fails, see [Troubleshooting](#troubleshooting). Hopefully, all
 docker cp artifact-run:/app/experiments-output ./experiments-output-kick-tires
 ```
 
-We explain what's happening in the commands above, and how to interpret the results, in the detailed instructions below.
-
+We explain what's happening in the commands above, and how to interpret the
+results, in the detailed instructions below.
 
 # Detailed Instructions
 
@@ -81,52 +81,63 @@ We first give an overview of how the artifact is structured and caches results i
 
 ## Artifact structure
 
+### Loaded Dice
+
+Loaded Dice and associated libraries for tuning generators are written in Julia.
+It tunes and generators then exports them as Rocq.
+The entry point for generator tuning is a `experiments/tool.jl`, which is invoked as a command line tool by `run.py`.
+
+### Etna
+
+Etna Python benchmark harness supporting multiple languages, we use its Rocq benchmarks.
+It is stored at `lib/etna`.
+
+### Cached results
+
 - `tuning-output`
+  * Caches tuned generators; created by `run.py`.
 - `lib/etna/data-artifact`
+  * Caches Etna run data; created by `etna.py`.
 - `lib/etna/figures-artifact`
+  * Caches Etna run data analysis; created by `etna.py`.
 - `experiments-output`
+  * Caches figures generated from `tuning-output` and `lib/etna/figures-artifact`.
+  * Both `run.py` and `etna.py` populate this folder, depending on the figure.
 
 ## Running the artifact
 
-## Interpreting results
+As before, start and enter the container iwth the following:
 
+> Note: if the container already exists, remove it with `docker rm artifact-container`
 
-docker run --name artifact-run artifact-image bash -c "./run.py --all --parallel; ./etna.py"
-
+```bash
+docker run -it --name artifact-container artifact-image bash
 ```
-docker build -t artifact-image .
+
+Now, to determine which part of the results are regenerated freshly, remove the
+appropriate cached results with `rm -rf` (within the container!).
+
+It should always be okay to `rm -rf lib/etna/data-artifact lib/etna/figures-artifact experiments-output`.
+This should remove the final figures, as well as the `etna` results.
+
+To add options for machines with limited memory for training, we support the following command-line parameters for `run.py`:
+- `--all` will always generate all figures, but individual figures can also be prepared with `--fig1`, `--fig2`, `--fig3`, `--fig4`, `--fig10`, `--fig11`, `--fig12`. All figures will produce all corresponding files in `experiments-output` except for Figures 11 and 12, as those prepare generators for Etna.
+- Passing `--fast` will result in lower resource requirement parameters for Figures 2, 3, 4, and 10. This results in different figures but should still support the claims.
+- Passing `--force` will force just the currently being generated results to be refreshed, to avoid the need to manually delete parts of `tuning-output`.
+
+As before
+TODO_ARTIFACT clean this up
+```bash
+./etna.py
 ```
 
-We have committed results from training and Etna to allow for a "kick-the-tires"
-check on the artifact infrastructure. When possible, cached results should be
-used, so no single command should take more than a few seconds. To test the
-artifact using these cached results, run the following.
-
-```
-docker run --name artifact-run artifact bash -c "./run.py --all --parallel"
+```bash
 docker cp artifact-run:/app/experiments-output ./experiments-output-kick-tires
 ```
 
-To clean up the docker container, run the following.
-```
-docker rm artifact-run
-```
+## Interpreting results
 
-Now, run the following to reproduce the results from scratch, then see the contents of `experiments-output-full`.
-```
-docker run --name artifact-run artifact bash -c "rm experiments-output lib/etna/data-artifact lib/etna/figures-artifact"
-docker run --name artifact-run artifact bash -c "./run.py --all --parallel"
-docker cp artifact-run:/app/experiments-output ./experiments-output-full
-```
-
-```
-TODO_ARTIFACT: use the below command instead, which also runs etna, once we can get QuickChick to build
-docker run --name artifact-run artifact bash -c "./run.py --all --parallel && ./etna.py"
-```
-
-### Upon success
-
-success, the following files should be in `experiments-output`.
+The following files should be in `experiments-output`.
 ```
 fig2_rbt_type_based_linear.png  
 fig2_rbt_type_based_uniform.png
@@ -146,47 +157,28 @@ fig12b_dist.png
 table1.txt
 ```
 
-# Verifying results
-
 For Figures 2, 3, 4, 10, and 12b, the graph should match those in the paper
 exactly (modulo LaTeX vs matplotlib render styling differences).
 
 Figures 11 and 12b depend on the particular Etna run, so will differ. They 
 should be similar, but the important properties should be quantitively compared
-by consulting table1.txt.
+by consulting table1.txt. To verify that our claim is supported, the Speedup vs
+Etna and Speedup vs Untuned columns should be significantly greater than 1.
+Below is the range of results we've seen from 3 different runs (given the number
+of numbers in this table, it is likely that at least one of your numbers are
+slightly out if this range if your table is generated from a fresh Etna run.)
 
 ```
-TODO_ARTIFACT: give bounds. below are examples from three runs
-
- Generator & Workload  │  Speedup vs Etna  │  Speedup vs Untuned  │  Train Time 
-────────────────────────────────────────────────────────────────────────────────
-BST Type-based         │              3.5x │                 5.4x │        3m
-RBT Type-based         │              5.3x │                 5.7x │        3m
-STLC Type-based        │              5.5x │                 3.2x │        7m
-STLC Bespoke           │              2.3x │                 1.9x │        8ms
-
- Generator & Workload  │  Speedup vs Etna  │  Speedup vs Untuned  │  Train Time 
-────────────────────────────────────────────────────────────────────────────────
-BST Type-based         │              3.6x │                 5.2x │        2m49s
-RBT Type-based         │              5.3x │                 5.7x │         3m4s
-STLC Type-based        │              5.5x │                 3.2x │        6m49s
-STLC Bespoke           │              2.4x │                 1.7x │        7m54s
-
- Generator & Workload  │  Speedup vs Etna  │  Speedup vs Untuned  │  Train Time 
-────────────────────────────────────────────────────────────────────────────────
-BST Type-based         │              3.2x │                 5.0x │        3m17s
-RBT Type-based         │              5.1x │                 7.0x │        3m30s
-STLC Type-based        │              5.0x │                 3.3x │        7m46s
-STLC Bespoke           │              2.5x │                 2.0x │         9m5s
-
- Generator & Workload  │  Speedup vs Etna  │  Speedup vs Untuned  │  Train Time 
-────────────────────────────────────────────────────────────────────────────────
-BST Type-based         │              3.8x │                 6.1x │        3m6s
-RBT Type-based         │              5.3x │                 7.2x │        3m26s
-STLC Type-based        │              5.7x │                 3.0x │        7m37s
-STLC Bespoke           │              2.6x │                 2.0x │        7m58s
-
+ Generator & Workload  │  Speedup vs Etna  │  Speedup vs Untuned  │
+─────────────────────────────────────────────────────────────────────
+BST Type-based         │       3.2x - 8.0x │          5.0x - 6.1x │
+RBT Type-based         │       5.1x - 5.3x │          5.7x - 7.2x │
+STLC Type-based        │       5.0x - 5.7x │          3.0x - 3.3x │
+STLC Bespoke           │       2.3x - 2.6x │          1.7x - 2.0x │
 ```
+
+We truncate training time as it is an abosulte time, and we expect it to be
+relatively machine-dependent.
 
 # Reusability guide
 
