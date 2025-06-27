@@ -143,7 +143,7 @@ Then, as before, run:
 
 Finally, exit the container and copy the experiment results:
 ```bash
-docker cp artifact-run:/app/experiments-output ./experiments-output-full
+docker cp artifact-container:/app/experiments-output ./experiments-output-full
 ```
 
 ## Interpreting results
