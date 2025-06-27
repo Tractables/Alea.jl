@@ -31,15 +31,19 @@ RUN apt-get update && apt-get install -y \
 # Install pyenv
 RUN curl https://pyenv.run | bash
 
-# Add pyenv to PATH
+# Add pyenv to PATH and set up environment
 ENV PATH="/root/.pyenv/bin:$PATH"
 RUN echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+RUN echo 'eval "$(pyenv init --path)"' >> ~/.bashrc
 
 # Install Python 3.10 via pyenv
 RUN eval "$(pyenv init -)" && pyenv install 3.10.12 && pyenv global 3.10.12
 
-# Create symlink for convenience
+# Create symlink for convenience and ensure PATH is correct
 RUN ln -sf /root/.pyenv/versions/3.10.12/bin/python3.10 /usr/local/bin/python
+RUN ln -sf /root/.pyenv/versions/3.10.12/bin/python3.10 /usr/local/bin/python3
+RUN ln -sf /root/.pyenv/versions/3.10.12/bin/pip /usr/local/bin/pip3
+ENV PATH="/root/.pyenv/versions/3.10.12/bin:$PATH"
 
 # Initialize opam and install Coq
 RUN opam init --disable-sandboxing -y
@@ -62,23 +66,23 @@ RUN echo 'eval $(opam env)' >> /root/.bashrc
 
 # Copy Python requirements and install packages
 COPY requirements.txt .
-RUN python3 -m venv /venv && . /venv/bin/activate
+RUN /root/.pyenv/versions/3.10.12/bin/python3.10 -m venv /venv
 ENV VIRTUAL_ENV=/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-RUN pip install matplotlib==3.10.3 pandas==2.2.3 pillow==11.2.1 contourpy==1.3.2 cycler==0.12.1 fonttools==4.58.0 kiwisolver==1.4.8 packaging==25.0 pyparsing==3.2.3 python-dateutil==2.9.0.post0 pytz==2025.2 six==1.17.0 tzdata==2025.2
-RUN pip install -r lib/etna/tool/requirements.txt
+RUN pip install pandas==1.5.3 numpy==1.22.4 scipy==1.10.1 seaborn
 RUN cd lib/etna/tool && pip install -e .
+RUN echo 'source /venv/bin/activate' >> /root/.bashrc
 
-# # Copy Julia project files
-# COPY lib/project-for-artifact/Project.toml ./
+# Copy Julia project files
+COPY lib/project-for-artifact/Project.toml ./
 
-# # Copy local Julia packages and QuickChick
+# Copy local Julia packages and QuickChick
 
-# # Install Julia packages
-# RUN julia --project -e 'using Pkg; Pkg.instantiate()'
-# RUN julia --project -e 'using Pkg; Pkg.develop(path="lib/IRTools.jl")'
-# RUN julia --project -e 'using Pkg; Pkg.develop(path="lib/CUDD.jl")'
-# RUN julia --project -e 'using Pkg; Pkg.develop(path="lib/Dice.jl")'
+# Install Julia packages
+RUN julia --project -e 'using Pkg; Pkg.instantiate()'
+RUN julia --project -e 'using Pkg; Pkg.develop(path="lib/IRTools.jl")'
+RUN julia --project -e 'using Pkg; Pkg.develop(path="lib/CUDD.jl")'
+RUN julia --project -e 'using Pkg; Pkg.develop(path="lib/Dice.jl")'
 
 # Install Coq QuickChick (from lib/QuickChick, run `make install`)
 
