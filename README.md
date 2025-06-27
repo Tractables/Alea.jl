@@ -7,17 +7,25 @@ Probabilistic Programming." The paper proposes probabilistic programming
 techniques to improve the distributions of random generators used for
 property-based testing.
 
-The artifact is distributed as a `TODO-COMPRESS` file containing the following
+The artifact is distributed as a `TODO_ARTIFACT` file containing the following
 main components:
-- This README
+- This README.
 - The source for *Loaded Dice*, the probabilistic progamming language we present
   for the purpose for writing generators.
 - "Tour"-style tutorials of Loaded Dice, which are described in
   [DOCUMENTATION.md](./DOCUMENTATION.md), and example tuning of generators.
-- A Docker image from which the figures and benchmarks can be reproduced.
+- A Docker image from which the figures and benchmarks can be reproduced..
 
-This document describes how to reproduce the figures in the paper. To make our
-systems reusable, we also include 
+# Hardware Dependencies
+
+TODO_ARTIFACT
+
+# Getting Started
+
+
+
+#
+
 
 # Instructions (Docker)
 
@@ -117,10 +125,10 @@ STLC Bespoke           │              2.5x │                 2.0x │       
 
  Generator & Workload  │  Speedup vs Etna  │  Speedup vs Untuned  │  Train Time 
 ────────────────────────────────────────────────────────────────────────────────
-BST Type-based         │              3.8x │                 6.1x │        
-RBT Type-based         │              5.3x │                 7.2x │        
-STLC Type-based        │              5.7x │                 3.0x │        
-STLC Bespoke           │              2.6x │                 2.0x │        
+BST Type-based         │              3.8x │                 6.1x │        3m6s
+RBT Type-based         │              5.3x │                 7.2x │        3m26s
+STLC Type-based        │              5.7x │                 3.0x │        7m37s
+STLC Bespoke           │              2.6x │                 2.0x │        7m58s
 
 ```
 
