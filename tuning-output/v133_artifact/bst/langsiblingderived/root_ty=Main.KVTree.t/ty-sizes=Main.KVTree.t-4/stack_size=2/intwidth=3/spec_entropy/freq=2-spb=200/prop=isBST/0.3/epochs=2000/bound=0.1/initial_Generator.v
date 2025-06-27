@@ -7,12 +7,12 @@ Import MonadNotation.
 From BST Require Import Impl.
 From BST Require Import Spec.
 
-Inductive LeafCtorTree :=
-  | LeafCtorTree_E.
-
 Inductive CtorTree :=
   | CtorTree_E
   | CtorTree_T.
+
+Inductive LeafCtorTree :=
+  | LeafCtorTree_E.
 
 Inductive TupLeafCtorTreeLeafCtorTree :=
   | MkLeafCtorTreeLeafCtorTree : LeafCtorTree -> LeafCtorTree -> TupLeafCtorTreeLeafCtorTree.

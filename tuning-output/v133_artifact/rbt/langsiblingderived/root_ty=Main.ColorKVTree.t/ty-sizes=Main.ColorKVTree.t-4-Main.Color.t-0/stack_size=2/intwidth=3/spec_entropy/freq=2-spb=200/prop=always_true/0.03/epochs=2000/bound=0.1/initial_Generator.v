@@ -9,16 +9,16 @@ Import ListNotations.
 
 From RBT Require Import Impl Spec.
 
-Inductive LeafCtorColor :=
-  | LeafCtorColor_R
-  | LeafCtorColor_B.
+Inductive LeafCtorTree :=
+  | LeafCtorTree_E.
 
 Inductive CtorTree :=
   | CtorTree_E
   | CtorTree_T.
 
-Inductive LeafCtorTree :=
-  | LeafCtorTree_E.
+Inductive LeafCtorColor :=
+  | LeafCtorColor_R
+  | LeafCtorColor_B.
 
 Inductive TupLeafCtorColorLeafCtorTreeLeafCtorTree :=
   | MkLeafCtorColorLeafCtorTreeLeafCtorTree : LeafCtorColor -> LeafCtorTree -> LeafCtorTree -> TupLeafCtorColorLeafCtorTreeLeafCtorTree.

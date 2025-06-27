@@ -6,13 +6,13 @@ Import MonadNotation.
 
 From STLC Require Import Impl Spec.
 
-Inductive CtorTyp :=
-  | CtorTyp_TBool
-  | CtorTyp_TFun.
-
 Inductive LeafCtorExpr :=
   | LeafCtorExpr_Var
   | LeafCtorExpr_Bool.
+
+Inductive CtorTyp :=
+  | CtorTyp_TBool
+  | CtorTyp_TFun.
 
 Inductive LeafCtorTyp :=
   | LeafCtorTyp_TBool.
@@ -23,23 +23,23 @@ Inductive CtorExpr :=
   | CtorExpr_Abs
   | CtorExpr_App.
 
-Inductive TupCtorTypLeafCtorExpr :=
-  | MkCtorTypLeafCtorExpr : CtorTyp -> LeafCtorExpr -> TupCtorTypLeafCtorExpr.
-
-Inductive TupLeafCtorExprLeafCtorExpr :=
-  | MkLeafCtorExprLeafCtorExpr : LeafCtorExpr -> LeafCtorExpr -> TupLeafCtorExprLeafCtorExpr.
+Inductive TupCtorExprCtorExpr :=
+  | MkCtorExprCtorExpr : CtorExpr -> CtorExpr -> TupCtorExprCtorExpr.
 
 Inductive TupCtorTypCtorExpr :=
   | MkCtorTypCtorExpr : CtorTyp -> CtorExpr -> TupCtorTypCtorExpr.
 
-Inductive TupCtorTypCtorTyp :=
-  | MkCtorTypCtorTyp : CtorTyp -> CtorTyp -> TupCtorTypCtorTyp.
+Inductive TupLeafCtorExprLeafCtorExpr :=
+  | MkLeafCtorExprLeafCtorExpr : LeafCtorExpr -> LeafCtorExpr -> TupLeafCtorExprLeafCtorExpr.
+
+Inductive TupCtorTypLeafCtorExpr :=
+  | MkCtorTypLeafCtorExpr : CtorTyp -> LeafCtorExpr -> TupCtorTypLeafCtorExpr.
 
 Inductive TupLeafCtorTypLeafCtorTyp :=
   | MkLeafCtorTypLeafCtorTyp : LeafCtorTyp -> LeafCtorTyp -> TupLeafCtorTypLeafCtorTyp.
 
-Inductive TupCtorExprCtorExpr :=
-  | MkCtorExprCtorExpr : CtorExpr -> CtorExpr -> TupCtorExprCtorExpr.
+Inductive TupCtorTypCtorTyp :=
+  | MkCtorTypCtorTyp : CtorTyp -> CtorTyp -> TupCtorTypCtorTyp.
 
 Definition genLeafTyp (chosen_ctor : LeafCtorTyp) (stack1 : nat) (stack2 : nat) : G (Typ) :=
   match chosen_ctor with

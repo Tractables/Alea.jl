@@ -9,12 +9,12 @@ Import ListNotations.
 
 From RBT Require Import Impl Spec.
 
-Inductive LeafCtorTree :=
-  | LeafCtorTree_E.
-
 Inductive CtorTree :=
   | CtorTree_E
   | CtorTree_T.
+
+Inductive LeafCtorTree :=
+  | LeafCtorTree_E.
 
 Inductive LeafCtorColor :=
   | LeafCtorColor_R

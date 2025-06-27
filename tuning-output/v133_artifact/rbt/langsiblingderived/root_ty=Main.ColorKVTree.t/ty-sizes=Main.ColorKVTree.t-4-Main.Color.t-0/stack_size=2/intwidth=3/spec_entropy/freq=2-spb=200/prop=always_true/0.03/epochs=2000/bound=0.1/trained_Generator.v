@@ -9,22 +9,22 @@ Import ListNotations.
 
 From RBT Require Import Impl Spec.
 
+Inductive LeafCtorTree :=
+  | LeafCtorTree_E.
+
 Inductive CtorTree :=
   | CtorTree_E
   | CtorTree_T.
-
-Inductive LeafCtorTree :=
-  | LeafCtorTree_E.
 
 Inductive LeafCtorColor :=
   | LeafCtorColor_R
   | LeafCtorColor_B.
 
-Inductive TupLeafCtorColorCtorTreeCtorTree :=
-  | MkLeafCtorColorCtorTreeCtorTree : LeafCtorColor -> CtorTree -> CtorTree -> TupLeafCtorColorCtorTreeCtorTree.
-
 Inductive TupLeafCtorColorLeafCtorTreeLeafCtorTree :=
   | MkLeafCtorColorLeafCtorTreeLeafCtorTree : LeafCtorColor -> LeafCtorTree -> LeafCtorTree -> TupLeafCtorColorLeafCtorTreeLeafCtorTree.
+
+Inductive TupLeafCtorColorCtorTreeCtorTree :=
+  | MkLeafCtorColorCtorTreeCtorTree : LeafCtorColor -> CtorTree -> CtorTree -> TupLeafCtorColorCtorTreeCtorTree.
 
 Definition genLeafColor (chosen_ctor : LeafCtorColor) (stack1 : nat) (stack2 : nat) : G (Color) :=
   match chosen_ctor with

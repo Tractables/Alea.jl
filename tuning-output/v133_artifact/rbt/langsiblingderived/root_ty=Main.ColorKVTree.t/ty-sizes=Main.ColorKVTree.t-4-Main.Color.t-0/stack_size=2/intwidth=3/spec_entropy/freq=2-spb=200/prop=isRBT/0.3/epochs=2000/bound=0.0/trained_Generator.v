@@ -13,12 +13,12 @@ Inductive CtorTree :=
   | CtorTree_E
   | CtorTree_T.
 
-Inductive LeafCtorTree :=
-  | LeafCtorTree_E.
-
 Inductive LeafCtorColor :=
   | LeafCtorColor_R
   | LeafCtorColor_B.
+
+Inductive LeafCtorTree :=
+  | LeafCtorTree_E.
 
 Inductive TupLeafCtorColorCtorTreeCtorTree :=
   | MkLeafCtorColorCtorTreeCtorTree : LeafCtorColor -> CtorTree -> CtorTree -> TupLeafCtorColorCtorTreeCtorTree.
