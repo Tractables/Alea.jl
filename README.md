@@ -188,8 +188,7 @@ STLC Type-based        │       5.0x - 5.7x │          3.0x - 3.3x │
 STLC Bespoke           │       2.3x - 2.6x │          1.7x - 2.0x │
 ```
 
-We truncate training time as it is an abosulte time, and we expect it to be
-relatively machine-dependent.
+We truncate training time as it is a non-relative value we expect it to be relatively machine-dependent. In all of our runs we find it to be within a minute of the times listed in the paper.
 
 # Reusability guide
 
