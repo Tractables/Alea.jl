@@ -106,7 +106,7 @@ It is stored at `lib/etna`.
 
 ## Running the artifact
 
-As before, start and enter the container iwth the following:
+As before, start and enter the container with the following:
 
 > Note: if the container already exists, remove it with `docker rm artifact-container`
 
@@ -125,14 +125,21 @@ To add options for machines with limited memory for training, we support the fol
 - Passing `--fast` will result in lower resource requirement parameters for Figures 2, 3, 4, and 10. This results in different figures but should still support the claims.
 - Passing `--force` will force just the currently being generated results to be refreshed, to avoid the need to manually delete parts of `tuning-output`.
 
-As before
-TODO_ARTIFACT clean this up
+All in all, this is the happy path of commands to run in Docker:
 ```bash
+rm -rf lib/etna/data-artifact lib/etna/figures-artifact experiments-output
+./run.py --force # pass --fast if limited memory, or skip command entirely
 ./etna.py
 ```
 
+**Both `./run.py --force` and `./etna.py` take on the order of hours (should be within 12).**
+If a high amount of parallelism and memory is available, `./run.py --force
+--parallel`, should take under four hours.
+If a high amount of parallelism is available, `./etna.py` should take under two hours.
+
+Then, as before, exit the container and copy rseults outside of Docker:
 ```bash
-docker cp artifact-run:/app/experiments-output ./experiments-output-kick-tires
+docker cp artifact-run:/app/experiments-output ./experiments-output-full
 ```
 
 ## Interpreting results
