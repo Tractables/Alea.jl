@@ -10,8 +10,7 @@ property-based testing.
 The artifact is distributed as a `.tar` file containing the following main
 components:
 - This `README.md`.
-- The source for *Loaded Dice*, the probabilistic progamming language we present
-  for the purpose for writing generators.
+- The source for *Loaded Dice*, the probabilistic progamming language we present for the purpose of writing generators.
 - Tour-style tutorials of Loaded Dice, which are described in
   [DOCUMENTATION.md](./DOCUMENTATION.md), and example tuning of generators.
 - A Docker image from which the figures and benchmarks can be reproduced..
@@ -60,16 +59,16 @@ Now, start and enter a container with:
 docker run -it --name artifact-container artifact-image bash
 ```
 
-From within the container, run the following to "kick-the-tires." This runs all parts of the artifact, using previously cached results, and should take less than five minutes.
+From within the container, run the following to "kick-the-tires." This runs all parts of the artifact using previously cached results. Each command should take less than five minutes.
 ```bash
 ./run.py --all --parallel
 ./etna.py
 ```
 
-If either command fails, see [Troubleshooting](#troubleshooting). Hopefully, all went well, in which case you can exit the docker container, then copy the results with:
+If either command fails, see [Troubleshooting](#troubleshooting). Hopefully, all went well, in which case you can exit the Docker container, then copy the results with:
 
 ```bash
-docker cp artifact-run:/app/experiments-output ./experiments-output-kick-tires
+docker cp artifact-container:/app/experiments-output ./experiments-output-kick-tires
 ```
 
 We explain what's happening in the commands above, and how to interpret the
@@ -77,7 +76,7 @@ results, in the detailed instructions below.
 
 # Detailed Instructions
 
-We first give an overview of how the artifact is structured and caches results in [Artifact structure](#artifact-structure). We then detail how to run the artifact to generate fresh results in [Running the artifact](#running-the-artifact). We then explain how to interpret results with respect to the paper's claims in [Interpreting results](#interpreting-results).
+We first give an overview of how the artifact is structured and caches results in [Artifact structure](#artifact-structure). We then detail how to run the artifact to generate fresh results in [Running the artifact](#running-the-artifact). Finally, we describe how to interpret results with respect to the paper's claims in [Interpreting results](#interpreting-results).
 
 ## Artifact structure
 
@@ -85,17 +84,19 @@ We first give an overview of how the artifact is structured and caches results i
 
 Loaded Dice and associated libraries for tuning generators are written in Julia.
 It tunes and generators then exports them as Rocq.
-The entry point for generator tuning is a `experiments/tool.jl`, which is invoked as a command line tool by `run.py`.
+The entry point for generator tuning is a `experiments/tool.jl`, which is invoked as a command line tool by `run.py` in this artifact.
 
 ### Etna
 
-Etna Python benchmark harness supporting multiple languages, we use its Rocq benchmarks.
-It is stored at `lib/etna`.
+Etna provides Python benchmark harness supporting multiple languages; we use its Rocq benchmarks.
+It is stored at `lib/etna`. It is invoked by `etna.py` in this artifact.
 
 ### Cached results
 
+Below are directories containing various stages of pre-cached results.
+
 - `tuning-output`
-  * Caches tuned generators; created by `run.py`.
+  * Caches tuned generators and associated data; created by `run.py`.
 - `lib/etna/data-artifact`
   * Caches Etna run data; created by `etna.py`.
 - `lib/etna/figures-artifact`
@@ -108,43 +109,46 @@ It is stored at `lib/etna`.
 
 As before, start and enter the container with the following:
 
-> Note: if the container already exists, remove it with `docker rm artifact-container`
+> Note: if the container already exists, first remove it with `docker rm artifact-container`
 
 ```bash
 docker run -it --name artifact-container artifact-image bash
 ```
 
-Now, to determine which part of the results are regenerated freshly, remove the
-appropriate cached results with `rm -rf` (within the container!).
-
-It should always be okay to `rm -rf lib/etna/data-artifact lib/etna/figures-artifact experiments-output`.
-This should remove the final figures, as well as the `etna` results.
-
-To add options for machines with limited memory for training, we support the following command-line parameters for `run.py`:
-- `--all` will always generate all figures, but individual figures can also be prepared with `--fig1`, `--fig2`, `--fig3`, `--fig4`, `--fig10`, `--fig11`, `--fig12`. All figures will produce all corresponding files in `experiments-output` except for Figures 11 and 12, as those prepare generators for Etna.
-- Passing `--fast` will result in lower resource requirement parameters for Figures 2, 3, 4, and 10. This results in different figures but should still support the claims.
-- Passing `--force` will force just the currently being generated results to be refreshed, to avoid the need to manually delete parts of `tuning-output`.
-
-All in all, this is the happy path of commands to run in Docker:
+This time, run the following to remove the final figures, as well as the `etna` results.
 ```bash
 rm -rf lib/etna/data-artifact lib/etna/figures-artifact experiments-output
-./run.py --force # pass --fast if limited memory, or skip command entirely
+```
+
+Now, we run `run.py`. Choose from one of these sets of arguments depending on your machine capabilities:
+```bash
+# Re-tunes generators from scratch. Takes around 8 hours (may vary by machine).
+./run.py --all --force --parallel 
+
+# Performs cheaper versions of some experiments, resulting in different plots
+# for Figures 2, 3, 4, 10, but ones that should still show the same relative
+# relationships between generators.
+./run.py --all --force --fast --parallel
+
+# Re-use the cached results. Takes less than 5 minutes.
+./run.py --all --parallel
+```
+
+> Note: passing `--force` will overwrite old data. If a run is interrupted or fails partway through, then the container may need to be recreated from the image.
+
+Then, as before, run:
+```bash
 ./etna.py
 ```
 
-**Both `./run.py --force` and `./etna.py` take on the order of hours (should be within 12).**
-If a high amount of parallelism and memory is available, `./run.py --force
---parallel`, should take under four hours.
-If a high amount of parallelism is available, `./etna.py` should take under two hours.
-
-Then, as before, exit the container and copy rseults outside of Docker:
+Finally, exit the container and copy the experiment results:
 ```bash
 docker cp artifact-run:/app/experiments-output ./experiments-output-full
 ```
 
 ## Interpreting results
 
-The following files should be in `experiments-output`.
+The following files should be in `experiments-output-full`.
 ```
 fig2_rbt_type_based_linear.png  
 fig2_rbt_type_based_uniform.png
@@ -210,6 +214,8 @@ These arguments always apply.
 
 In particular, if something is too resource-intensive, include `--fast`.
 If something breaks, remove `--parallel` and include `--verbose`.
+
+`--all` will always generate all figures, but individual figures can also be prepared with `--fig1`, `--fig2`, `--fig3`, `--fig4`, `--fig10`, `--fig11`, `--fig12`. All figures will produce all corresponding files in `experiments-output` except for Figures 11 and 12, as those prepare generators for Etna.
 
 Also see `./run.py --help`.
 
