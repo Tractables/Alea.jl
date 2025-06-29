@@ -192,7 +192,7 @@ function save_areaplot2(path, header, v; xlabel, ylabel)
     max_proportions = max_proportions[order]
 
     # Calculate threshold to show top 20 labels
-    num_labels_to_show = min(20, length(max_proportions))
+    num_labels_to_show = min(17, length(max_proportions))
     threshold = max_proportions[num_labels_to_show]  
     println_flush(rs.io, "Threshold: $(threshold)")
 
@@ -204,7 +204,7 @@ function save_areaplot2(path, header, v; xlabel, ylabel)
     header = header[order]
     labels = function f(h::AbstractString)
         if h == "not well-typed"
-            return "Not well-typed"
+            return "Not Well-Typed"
         end
         l = 20
         if length(collect(h)) > l
@@ -242,14 +242,14 @@ function save_areaplot2(path, header, v; xlabel, ylabel)
         end
     end
 
-    fontsize=20
+    fontsize=36
     areaplot(
         mat,
         labels=labels,
         color_palette=colors,
         tickfontsize=fontsize,
         legendfontsize=fontsize,
-        fontfamily="Palatino Roman",
+        fontfamily="Arial",
         fontsize=fontsize,
         xlabel=xlabel,
         ylabel=ylabel,
@@ -257,17 +257,17 @@ function save_areaplot2(path, header, v; xlabel, ylabel)
         xlabelfontsize=fontsize,
         ylabelfontsize=fontsize,
         legend=:outerright,
-        left_margin=20Plots.mm,
-        right_margin=30Plots.mm,
+        left_margin=30Plots.mm,
+        right_margin=34Plots.mm,
         foreground_color_legend = nothing,
-        bottom_margin=10Plots.mm,
+        bottom_margin=22Plots.mm,
         legend_left_margin=-20Plots.mm,
         yticks=nothing,
     )
     yflip!(true)
-    plot!(size=(2000,1200))
+    plot!(size=(2100,1200))
     Plots.savefig("$(path).png")
-    Plots.savefig("$(path).svg")
+    # Plots.savefig("$(path).svg")
     # Plots.savefig("$(path).tikz")
     # Plots.savefig("$(path).tex")
 end
@@ -477,7 +477,7 @@ function make_plots(
             end
 
             filename = joinpath(rs.out_dir, "feature_dist_" * join(to_subpath(loss_config), "_"))
-            mk_areaplot2(filename, has_header=true, xlabel="Epochs", ylabel="Sample Proportion")
+            mk_areaplot2(filename, has_header=true, xlabel="Number of Gradient Steps", ylabel="Sample Proportion")
         end
     end
 end
