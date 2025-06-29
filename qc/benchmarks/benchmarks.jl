@@ -192,7 +192,7 @@ function save_areaplot2(path, header, v; xlabel, ylabel)
     max_proportions = max_proportions[order]
 
     # Calculate threshold to show top 20 labels
-    num_labels_to_show = min(17, length(max_proportions))
+    num_labels_to_show = min(15, length(max_proportions))
     threshold = max_proportions[num_labels_to_show]  
     println_flush(rs.io, "Threshold: $(threshold)")
 
@@ -242,7 +242,7 @@ function save_areaplot2(path, header, v; xlabel, ylabel)
         end
     end
 
-    fontsize=36
+    fontsize=40
     areaplot(
         mat,
         labels=labels,
@@ -257,15 +257,15 @@ function save_areaplot2(path, header, v; xlabel, ylabel)
         xlabelfontsize=fontsize,
         ylabelfontsize=fontsize,
         legend=:outerright,
-        left_margin=30Plots.mm,
+        left_margin=35Plots.mm,
         right_margin=34Plots.mm,
         foreground_color_legend = nothing,
-        bottom_margin=22Plots.mm,
-        legend_left_margin=-20Plots.mm,
+        bottom_margin=30Plots.mm,
+        legend_left_margin=-50Plots.mm,
         yticks=nothing,
     )
     yflip!(true)
-    plot!(size=(2100,1200))
+    plot!(size=(2300,1200))
     Plots.savefig("$(path).png")
     # Plots.savefig("$(path).svg")
     # Plots.savefig("$(path).tikz")
