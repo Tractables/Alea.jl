@@ -1,10 +1,10 @@
-using Dice
+using Alea
 using DelimitedFiles
 using BenchmarkTools
 using Plots
 
 
-x = (@dice unit_gamma(DistFix{5, 4}, 2, -2.0))
+x = (@alea unit_gamma(DistFix{5, 4}, 2, -2.0))
 a = x.returnvalue
 b = reduce(&, x.observations)
 
