@@ -1,5 +1,5 @@
 using Pkg; Pkg.activate(@__DIR__)
-using Dice, Distributions
+using Alea, Distributions
 
 precision = 0
 DFiP = DistFix{11+precision, precision}
@@ -19,7 +19,7 @@ ys = DFiP.([0.617007250574049, 0.895262019894671, -0.729874754380836,
 1.87341593940818, 1.89344977488441, 0.537059334676276, 0.944371774385459,
 -0.474992028001801]);
 
-code = @dice begin
+code = @alea begin
   
   #Improper priors
   mean = uniform(DFiP, -64.0, 64.0)

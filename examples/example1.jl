@@ -1,5 +1,5 @@
-using Dice
-code = @dice begin
+using Alea
+code = @alea begin
     a = flip(0.4)
     b = flip(0.6)
     observe(a | b)
