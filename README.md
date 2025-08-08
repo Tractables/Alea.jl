@@ -4,6 +4,11 @@
 
 `HyBit` is a bit blasting based probabilistic programming system for discrete-continuous probabilistic programs. It is built on top of another probabilistic programming language Dice See [https://github.com/SHoltzen/dice](https://github.com/SHoltzen/dice).  
 
+
+## This branch
+
+This branch looks into applying different heuristics into variable ordering to compile a smaller OBDD for the probabilistic programs. 
+
 ## Installation
 
 Install Julia 1.8.5 or higher using [these instructions](https://julialang.org/downloads/platform/).
