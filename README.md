@@ -1,6 +1,16 @@
-# HyBit
+# Alea.jl
 
 [![Unit Tests](https://github.com/Juice-jl/Dice.jl/workflows/Unit%20Tests/badge.svg)](https://github.com/Juice-jl/Dice.jl/actions?query=workflow%3A%22Unit+Tests%22+branch%3Amain)  [![codecov](https://codecov.io/gh/Tractables/Dice.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/Tractables/Dice.jl)
+
+Alea is a probabilistic programming system built in Julia based on the discrete probabilistic programming language Dice. See [https://github.com/SHoltzen/dice](https://github.com/SHoltzen/dice).
+
+This repository currently consists code for the following papers:
+
+1. [Bit Blasting Probabilistic Programs.](https://dl.acm.org/doi/10.1145/3656412) Poorva Garg, Steven Holtzen, Guy Van den Broeck, Todd Millstein. PLDI 2024.
+
+2. [Scaling Integer Arithmetic in Probabilistic Programs.](https://dl.acm.org/doi/10.5555/3625834.3625859) William X. Cao, Poorva Garg, Ryan Tjoa, Steven Holtzen, Todd Millstein, Guy Van den Broeck. UAI 2023.
+
+## HyBit
 
 `HyBit` is a bit blasting based probabilistic programming system for discrete-continuous probabilistic programs. It is built on top of another probabilistic programming language Dice See [https://github.com/SHoltzen/dice](https://github.com/SHoltzen/dice).  
 
@@ -17,7 +27,7 @@ pip3 install sympy
 Next, clone the repository and start julia in project mode for current folder:
 
 ```bash
-cd Dice.jl
+cd Alea.jl
 julia --project
 ```
 
@@ -27,7 +37,7 @@ In Julia REPL, then use the following command to install all the needed dependen
 using Pkg; Pkg.instantiate()
 ```
 
-Once the Dice Julia package is instantiated, its inference algorithm and HyBit is ready to use.
+Once the Alea Julia package is instantiated, its inference algorithm and HyBit is ready to use.
 
 ## Quick Start
 
@@ -36,8 +46,8 @@ Once the Dice Julia package is instantiated, its inference algorithm and HyBit i
 Let's first start with a discrete probabilistic program. Imagine you have two coins `a` and `b` with probability of landing on heads as 0.4 and 0.6 respectively. You flip both the coins and see that one of them has landed heads. What is the probability that `a` lands heads?
 
 ```julia
-using Dice
-code = @dice begin
+using Alea
+code = @alea begin
     a = flip(0.4)
     b = flip(0.6)
     observe(a | b)
@@ -65,9 +75,9 @@ DataStructures.DefaultOrderedDict{Any, Any, Float64} with 2 entries:
 To see the use of HyBit to write discrete-continuous probabilistic programs, consider the following example. Here, we compute the probability of a random variable `a` being less than 0.
 
 ```julia
-using Dice, Distributions
+using Alea, Distributions
 DFiP = DistFix{6, 2}
-code = @dice begin
+code = @alea begin
             a = bitblast(DFiP, Normal(0, 1), 4, -8.0, 8.0)
             b = a < DFiP(0.0)
             b
@@ -89,9 +99,9 @@ DataStructures.DefaultOrderedDict{Any, Any, Float64} with 2 entries:
   false => 0.5
 ```
 
-The Julia package Dice makes available the following constructs
+The Julia package Alea makes available the following constructs
 
-* `@dice` macro that encapsulates the probabilistic program
+* `@alea` macro that encapsulates the probabilistic program
 * `observe()` to condition on a Boolean random variable being true.
 * `DistFix{W, F}` as types to represent fixed point numbers with `W` bits, `F` bits being after the binary point. If the floating point numbers passed as an argument to `DistFix{W, F}` are outside the range $$[-2^{W - F - 1}, 2^{W - F - 1} - 2^{-F}]$$, one would encounter an error.
 * `bitblast` to bitblast continuous density functions using linear pieces with the following signature.
@@ -118,5 +128,5 @@ It also offers different probabilistic inference queries such as the following:
 More examples can be found at the following directories:
 
 * `test/` directory contains unit test cases for all the functions and data types implemented.
-* `examples/` contains simple examples to get started with using Dice Julia package to write probabilistic programs.
+* `examples/` contains simple examples to get started with using Alea Julia package to write probabilistic programs.
 * `benchmarks/` contains discrete-continuous probabilistic programs to get started with using bit blasting.  
