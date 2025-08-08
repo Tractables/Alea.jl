@@ -25,6 +25,7 @@ rev = "loop-break-patch"
 url = "https://github.com/PoorvaGarg/IRTools.jl"
 
 [compat]
+BenchmarkTools = "1"
 CUDD = "0.3"
 DataStructures = "0.18, 0.19"
 DirectedAcyclicGraphs = "0.1.1"
