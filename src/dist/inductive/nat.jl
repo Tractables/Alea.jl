@@ -1,7 +1,7 @@
 export Nat, nat_ast_to_int
 
 module Nat
-    using Dice
+    using Alea
     @type t = Z() | S(t)
 end
 

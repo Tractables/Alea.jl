@@ -4,11 +4,13 @@
 
 Alea is a probabilistic programming system built in Julia based on the discrete probabilistic programming language Dice. See [https://github.com/SHoltzen/dice](https://github.com/SHoltzen/dice).
 
-This repository currently consists code for the following papers:
+This repository currently consists of code for the following papers:
 
-1. [Bit Blasting Probabilistic Programs.](https://dl.acm.org/doi/10.1145/3656412) Poorva Garg, Steven Holtzen, Guy Van den Broeck, Todd Millstein. PLDI 2024.
+3\. Tuning Random Generators: Property-Based Testing as Probabilistic Programming. Ryan Tjoa, Poorva Garg, Harrison Goldstein, Todd Millstein, Benjamin Pierce, Guy Van den Broeck. OOPSLA 2025.
 
-2. [Scaling Integer Arithmetic in Probabilistic Programs.](https://dl.acm.org/doi/10.5555/3625834.3625859) William X. Cao, Poorva Garg, Ryan Tjoa, Steven Holtzen, Todd Millstein, Guy Van den Broeck. UAI 2023.
+2\. [Bit Blasting Probabilistic Programs.](https://dl.acm.org/doi/10.1145/3656412) Poorva Garg, Steven Holtzen, Guy Van den Broeck, Todd Millstein. PLDI 2024.
+
+1\. [Scaling Integer Arithmetic in Probabilistic Programs.](https://dl.acm.org/doi/10.5555/3625834.3625859) William X. Cao, Poorva Garg, Ryan Tjoa, Steven Holtzen, Todd Millstein, Guy Van den Broeck. UAI 2023.
 
 ## HyBit
 
