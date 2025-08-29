@@ -1,4 +1,4 @@
-using Dice
+using Alea
 using Dates
 using Random
 
@@ -27,12 +27,12 @@ abstract type RBT <: Workload end
 abstract type Bools{W} <: Workload end
 
 module Nat
-    using Dice
+    using Alea
     t = DistUInt32
 end
 
 module Z
-    using Dice
+    using Alea
     t = DistInt32
 end
 

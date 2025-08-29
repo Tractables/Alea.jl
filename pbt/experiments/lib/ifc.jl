@@ -1,4 +1,4 @@
-using Dice
+using Alea
 
 @inductive Label L() M1() M2() H()
 all_labels = [L(), M1(), M2(), H()]

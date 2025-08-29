@@ -1,34 +1,34 @@
 # Define DistSTLC
 
 module Typ
-    using Dice
+    using Alea
     @type t = TBool() | TFun(t, t)
 end
 type_to_coq(::Type{Typ.t}) = "Typ"
 
 module Expr
-    using Dice
+    using Alea
     using Main: Nat, Typ
     @type t = Var(Nat.t) | Bool(AnyBool) | Abs(Typ.t, t) | App(t, t)
 end
 type_to_coq(::Type{Expr.t}) = "Expr"
 
 module OptExpr
-    using Dice
+    using Alea
     using Main: Expr
     @type t = None() | Some(Expr.t)
 end
 type_to_coq(::Type{OptExpr.t}) = "option Expr"
 
 module ListTyp
-    using Dice
+    using Alea
     using Main: Typ
     @type t = nil() | cons(Typ.t, t)
 end
 type_to_coq(::Type{ListTyp.t}) = "list Typ"
 
 module ListNat
-    using Dice
+    using Alea
     @type t = nil() | cons(DistUInt32, t)
 end
 type_to_coq(::Type{ListNat.t}) = "list nat"
@@ -41,14 +41,14 @@ function prob_map(dest_module, f, l::ListNat.t)
 end
 
 module ListOptExpr
-    using Dice
+    using Alea
     using Main: OptExpr
     @inductive t nil() cons(OptExpr.t, t)
 end
 type_to_coq(::Type{ListOptExpr.t}) = "list option Expr"
 
 module Ctx
-    using Dice
+    using Alea
     using Main: Typ
     @inductive t nil() cons(Typ.t, t)
 end

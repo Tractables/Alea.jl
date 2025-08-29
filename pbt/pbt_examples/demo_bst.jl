@@ -1,6 +1,6 @@
 # Demo of using BDD MLE to learn flip probs for a BST of uniform depth
 
-using Dice
+using Alea
 
 @inductive DistTree DistLeaf() DistBranch(DistUInt32, DistTree, DistTree)
 

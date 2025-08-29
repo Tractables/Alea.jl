@@ -1,5 +1,5 @@
 # Learning flip probs to change the length distribution of a list generator.
-using Dice
+using Alea
 
 # Define inductive datatype for nat lists
 @inductive DistNatList DistNil() DistCons(DistUInt32, DistNatList)

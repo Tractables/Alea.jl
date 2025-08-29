@@ -1,6 +1,6 @@
 # Define Tree
 module KVTree
-    using Dice
+    using Alea
     using Main: Nat
     @type t = E() | T(t, Nat.t, Nat.t, t)
 end

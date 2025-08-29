@@ -1,9 +1,9 @@
 
 # Define RBTree
-using Dice
+using Alea
 
 module Color
-    using Dice
+    using Alea
     @type t = R() | B()
 end
 function Base.string(c::Color.t)
@@ -16,7 +16,7 @@ end
 type_to_coq(::Type{Color.t}) = "Color"
 
 module ColorKVTree
-    using Dice
+    using Alea
     using Main: Z, Color
     @type t = E() | T(Color.t, t, Z.t, Z.t, t)
 end

@@ -1,5 +1,5 @@
 using Revise
-using Dice
+using Alea
 using Random
 
 # Finding accuracy errors in an approximate inverse square root function

@@ -2,7 +2,7 @@
 
 # # Using BDD MLE to learn flip probs for closed UTLC exprs of uniform AST depth
 
-# using Dice
+# using Alea
 # include("lib/dist_utlc.jl")     # DistVar, DistApp, DistAbs, utlc_str
 
 # function gen_name()

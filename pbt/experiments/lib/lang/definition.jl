@@ -1,7 +1,7 @@
 using DataStructures
 
 module L
-    using Dice: InductiveType
+    using Alea: InductiveType
     # using DirectedAcyclicGraphs: Leaf, Inner
     import DirectedAcyclicGraphs: NodeType, DAG, children, Leaf, Inner
 

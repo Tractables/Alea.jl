@@ -1,4 +1,4 @@
-using Dice
+using Alea
 import Base: all, any
 
 all(itr) = reduce(&, itr)

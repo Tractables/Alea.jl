@@ -1,4 +1,4 @@
-using Dice
+using Alea
 abstract type GenerationParams{T} end
 include("../../qc/benchmarks/benchmarks.jl")
 I = DistUInt32

@@ -1,4 +1,4 @@
-using Dice
+using Alea
 
 
 import Dice: tobits, frombits

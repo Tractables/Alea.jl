@@ -1,4 +1,4 @@
-using Dice
+using Alea
 
 @type Expr = Var(DistString) | App(Expr, Expr) | Abs(DistString, Expr)
 

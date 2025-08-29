@@ -13,7 +13,7 @@
 # maximize_entropy_with_REINFORCE(g) # this function is made-up, but its core parts
 #                                      are in the implementation of spec entropy
 
-using Dice
+using Alea
 
 lo1, hi1, lo2, hi2 = 1000, 2000, 5000, 8000
 
