@@ -2,36 +2,31 @@
 
 [![Unit Tests](https://github.com/Juice-jl/Dice.jl/workflows/Unit%20Tests/badge.svg)](https://github.com/Juice-jl/Dice.jl/actions?query=workflow%3A%22Unit+Tests%22+branch%3Amain)  [![codecov](https://codecov.io/gh/Tractables/Dice.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/Tractables/Dice.jl)
 
-Alea is a probabilistic programming system built in Julia based on the discrete probabilistic programming language Dice. See [https://github.com/SHoltzen/dice](https://github.com/SHoltzen/dice).
+Alea is a probabilistic programming system built in Julia, based on the discrete probabilistic programming language [Dice](https://github.com/SHoltzen/dice).
+
+## Papers
 
 This repository currently consists of code for the following papers:
 
-3\. Tuning Random Generators: Property-Based Testing as Probabilistic Programming. Ryan Tjoa, Poorva Garg, Harrison Goldstein, Todd Millstein, Benjamin Pierce, Guy Van den Broeck. OOPSLA 2025.
+[Tuning Random Generators: Property-Based Testing as Probabilistic Programming.](https://doi.org/10.1145/3763082) Ryan Tjoa, Poorva Garg, Harrison Goldstein, Todd Millstein, Benjamin Pierce, Guy Van den Broeck. OOPSLA 2025.
+- Alea incorporates *Loaded Dice*, a discrete probabilistic programming system that supports differentiaton and parameter learning. The tutorials, linked in [Quick Start](#quick-start), cover parameter learning, and [pbt/](pbt/) contains examples in tuning generators for property-based testing.
 
-2\. [Bit Blasting Probabilistic Programs.](https://dl.acm.org/doi/10.1145/3656412) Poorva Garg, Steven Holtzen, Guy Van den Broeck, Todd Millstein. PLDI 2024.
+[Bit Blasting Probabilistic Programs.](https://dl.acm.org/doi/10.1145/3656412) Poorva Garg, Steven Holtzen, Guy Van den Broeck, Todd Millstein. PLDI 2024.
+- Alea incorporates *HyBit*, a bit blasting-based probabilistic programming system for discrete-continuous probabilistic programs. See [hybrid/](hybrid/) for more.
 
-1\. [Scaling Integer Arithmetic in Probabilistic Programs.](https://dl.acm.org/doi/10.5555/3625834.3625859) William X. Cao, Poorva Garg, Ryan Tjoa, Steven Holtzen, Todd Millstein, Guy Van den Broeck. UAI 2023.
-
-## HyBit
-
-`HyBit` is a bit blasting based probabilistic programming system for discrete-continuous probabilistic programs. It is built on top of another probabilistic programming language Dice See [https://github.com/SHoltzen/dice](https://github.com/SHoltzen/dice).  
+[Scaling Integer Arithmetic in Probabilistic Programs.](https://dl.acm.org/doi/10.5555/3625834.3625859) William X. Cao, Poorva Garg, Ryan Tjoa, Steven Holtzen, Todd Millstein, Guy Van den Broeck. UAI 2023.
 
 ## Installation
 
 Install Julia 1.8.5 or higher using [these instructions](https://julialang.org/downloads/platform/).
 
-Then, install SymPy and IRTools using the following command:
+Then, install SymPy using the following command:
 
 ```bash
 pip3 install sympy
 ```
 
-If on Apple Silicon, first add our patched version of CUDD:
-```bash
-julia --project -e "import Pkg;Pkg.add(url=\"https://github.com/rtjoa/CUDD.jl.git\",rev=\"m1compat\")"`
-```
-
-Then, to install Dice and update dependencies:
+Then, to install Alea and update dependencies:
 ```bash
 julia --project -e "import Pkg;Pkg.update()"
 ```
@@ -40,92 +35,9 @@ One can now run a program from the Julia REPL (which can be opened with `julia -
 
 ## Quick Start
 
-### Example: Discrete
+Once the setup is complete, see [`tutorial/tour_1_core.jl`](tutorial/tour_1_core.jl) for a quick start to Alea. Then, see [`tutorial/tour_2_learning.jl`](tutorial/tour_2_learning.jl) for an introduction to learning probabilities.
 
-Let's first start with a discrete probabilistic program. Imagine you have two coins `a` and `b` with probability of landing on heads as 0.4 and 0.6 respectively. You flip both the coins and see that one of them has landed heads. What is the probability that `a` lands heads?
+Finally, see the following:
 
-```julia
-using Alea
-code = @alea begin
-    a = flip(0.4)
-    b = flip(0.6)
-    observe(a | b)
-    return a
-end
-@show pr(code)
-```
-
-We have this example written up in the file `examples/example1.jl`. It can be run as follows:
-
-```bash
-julia --project examples/example1.jl
-```
-
-And it should print the result as following showing that `a` is true with probability `0.526316`:
-
-```bash
-DataStructures.DefaultOrderedDict{Any, Any, Float64} with 2 entries:
-  true  => 0.526316
-  false => 0.473684
-```
-
-### Example: Discrete-Continuous
-
-To see the use of HyBit to write discrete-continuous probabilistic programs, consider the following example. Here, we compute the probability of a random variable `a` being less than 0.
-
-```julia
-using Alea, Distributions
-DFiP = DistFix{6, 2}
-code = @alea begin
-            a = bitblast(DFiP, Normal(0, 1), 4, -8.0, 8.0)
-            b = a < DFiP(0.0)
-            b
-end
-pr(code)
-```
-
-We have this example written up in the file `examples/example2.jl`. It can be run as follows:
-
-```bash
-julia --project examples/example2.jl
-```
-
-And it should print the result as following:
-
-```bash
-DataStructures.DefaultOrderedDict{Any, Any, Float64} with 2 entries:
-  true  => 0.5
-  false => 0.5
-```
-
-The Julia package Alea makes available the following constructs
-
-* `@alea` macro that encapsulates the probabilistic program
-* `observe()` to condition on a Boolean random variable being true.
-* `DistFix{W, F}` as types to represent fixed point numbers with `W` bits, `F` bits being after the binary point. If the floating point numbers passed as an argument to `DistFix{W, F}` are outside the range $$[-2^{W - F - 1}, 2^{W - F - 1} - 2^{-F}]$$, one would encounter an error.
-* `bitblast` to bitblast continuous density functions using linear pieces with the following signature.
-
-```julia
-function bitblast(::Type{DistFix{W,F}}, dist::ContinuousUnivariateDistribution, 
-                  numpieces::Int, start::Float64, stop::Float64) where {W,F}
-```
-
-* 'general_gamma' to bitblast general gamma densities $$x^{\alpha}e^{\beta x}$$ soundly with the following signature
-
-```julia
-function general_gamma(::Type{DistFix{W, F}}, alpha::Int, beta::Float64, ll::Float64, ul::Float64) where {W, F}
-```
-
-It also offers different probabilistic inference queries such as the following:
-
-* `pr(code)` that computes the probability distribution of the returned types of `code`.
-* `expectation(code)` computes the mean of the value returned by `code`
-* `variance(code)` computes the variance of the value returned by `code`.
-
-## More Examples
-
-More examples can be found at the following directories:
-
-* `test/` directory contains unit test cases for all the functions and data types implemented.
-* `examples/` contains simple examples to get started with using Alea Julia package to write probabilistic programs.
-* `benchmarks/` contains discrete-continuous probabilistic programs to get started with using bit blasting.  
+* [examples/](examples/) contains simple examples to get started with using Alea Julia package to write probabilistic programs.
+* [test/](test/) directory contains unit test cases for all the functions and data types implemented.
