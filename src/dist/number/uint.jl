@@ -315,17 +315,11 @@ function overflow_sum(x::DistUInt{W}, y::DistUInt{W}) where W
 end
 
 function Base.min(x::DistUInt{W}, y::DistUInt{W}) where W
-    DistUInt{W}([
-        a & b
-        for (a, b) in zip(x.bits, y.bits)
-    ])
+    @alea_ite if x < y x else y end
 end
 
 function Base.max(x::DistUInt{W}, y::DistUInt{W}) where W
-    DistUInt{W}([
-        a | b
-        for (a, b) in zip(x.bits, y.bits)
-    ])
+    @alea_ite if x > y x else y end
 end
 
 function Base.:(-)(x::DistUInt{W}, y::DistUInt{W}) where W

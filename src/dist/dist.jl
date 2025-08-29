@@ -14,7 +14,7 @@ isdeterministic(x) =
 
 function Base.show(io::IO, x::Dist) 
     if isdeterministic(x)
-        print(io, "$(typeof(x))($(frombits(x, nothing)))")
+        print(io, "$(typeof(x))($(frombits(x, Dict())))")
     else
         print(io, "$(typeof(x))@$(hash(x)÷ 10000000000000)")
     end
