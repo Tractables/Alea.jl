@@ -35,7 +35,7 @@ One can now run a program from the Julia REPL (which can be opened with `julia -
 
 ## Quick Start
 
-Once the setup is complete, see [`tutorial/tour_1_core.jl`](tutorial/tour_1_core.jl) for a quick start to Alea. Then, see [`tutorial/tour_2_learning.jl`](tutorial/tour_2_learning.jl) for an introduction to learning probabilities.
+Once the setup is complete, see [tutorial/tour_1_core.jl](tutorial/tour_1_core.jl) for a quick start to Alea. Then, see [tutorial/tour_2_learning.jl](tutorial/tour_2_learning.jl) for an introduction to learning probabilities.
 
 Finally, see the following:
 
