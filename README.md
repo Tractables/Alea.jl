@@ -1,3 +1,7 @@
+# Loaded Dice
+
+Loaded Dice is incorporated into the Alea probabilistic programming system. [**Consider switching to the `main` branch for the most-up-to-date version of the system.**](https://github.com/Tractables/Alea.jl) This branch, [loaded-dice](https://github.com/Tractables/Alea.jl/tree/loaded-dice), is a stable landing page for Loaded Dice at a known-relevant version of Alea.
+
 # Alea.jl
 
 [![Unit Tests](https://github.com/Juice-jl/Dice.jl/workflows/Unit%20Tests/badge.svg)](https://github.com/Juice-jl/Dice.jl/actions?query=workflow%3A%22Unit+Tests%22+branch%3Amain)  [![codecov](https://codecov.io/gh/Tractables/Dice.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/Tractables/Dice.jl)
