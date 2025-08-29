@@ -10,15 +10,14 @@ abstract type Dist{T}  <: DAG end
 
 "Does the distribution have a deterministic value?"
 isdeterministic(x) =
-    true
-    # isempty(tobits(x))
+    isempty(tobits(x))
 
 function Base.show(io::IO, x::Dist) 
-    # if isdeterministic(x)
-    #     print(io, "$(typeof(x))($(frombits(x, Dict())))")
-    # else
+    if isdeterministic(x)
+        print(io, "$(typeof(x))($(frombits(x, Dict())))")
+    else
         print(io, "$(typeof(x))@$(hash(x)÷ 10000000000000)")
-    # end
+    end
 end
 
 include("bool.jl")
