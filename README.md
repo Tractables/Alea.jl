@@ -40,4 +40,4 @@ Once the setup is complete, see [tutorial/tour_1_core.jl](tutorial/tour_1_core.j
 Finally, see the following:
 
 * [examples/](examples/) contains simple examples to get started with using Alea Julia package to write probabilistic programs.
-* [test/](test/) directory contains unit test cases for all the functions and data types implemented.
+* [test/](test/) contains unit test cases for all the functions and data types implemented.
