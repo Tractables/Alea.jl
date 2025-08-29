@@ -4,17 +4,7 @@
 
 Alea is a probabilistic programming system built in Julia, based on the discrete probabilistic programming language [Dice](https://github.com/SHoltzen/dice).
 
-## Papers
-
-This repository currently consists of code for the following papers:
-
-[Tuning Random Generators: Property-Based Testing as Probabilistic Programming.](https://doi.org/10.1145/3763082) Ryan Tjoa, Poorva Garg, Harrison Goldstein, Todd Millstein, Benjamin Pierce, Guy Van den Broeck. OOPSLA 2025.
-- Alea incorporates *Loaded Dice*, a discrete probabilistic programming system that supports differentiaton and parameter learning. The tutorials, linked in [Quick Start](#quick-start), cover parameter learning, and [pbt/](pbt/) contains examples in tuning generators for property-based testing.
-
-[Bit Blasting Probabilistic Programs.](https://dl.acm.org/doi/10.1145/3656412) Poorva Garg, Steven Holtzen, Guy Van den Broeck, Todd Millstein. PLDI 2024.
-- Alea incorporates *HyBit*, a bit blasting-based probabilistic programming system for discrete-continuous probabilistic programs. See [hybrid/](hybrid/) for more.
-
-[Scaling Integer Arithmetic in Probabilistic Programs.](https://dl.acm.org/doi/10.5555/3625834.3625859) William X. Cao, Poorva Garg, Ryan Tjoa, Steven Holtzen, Todd Millstein, Guy Van den Broeck. UAI 2023.
+[Installation](#installation) | [Quick Start](#quick-start) | [Papers](#papers)
 
 ## Installation
 
@@ -41,3 +31,15 @@ Finally, see the following:
 
 * [examples/](examples/) contains simple examples to get started with using Alea Julia package to write probabilistic programs.
 * [test/](test/) contains unit test cases for all the functions and data types implemented.
+
+## Papers
+
+This repository currently consists of code for the following papers:
+
+[Tuning Random Generators: Property-Based Testing as Probabilistic Programming.](https://doi.org/10.1145/3763082) Ryan Tjoa, Poorva Garg, Harrison Goldstein, Todd Millstein, Benjamin Pierce, Guy Van den Broeck. OOPSLA 2025.
+- Alea incorporates *Loaded Dice*, a discrete probabilistic programming system that supports differentiaton and parameter learning. The tutorials, linked in [Quick Start](#quick-start), cover parameter learning, and [pbt/](pbt/) contains examples in tuning generators for property-based testing.
+
+[Bit Blasting Probabilistic Programs.](https://dl.acm.org/doi/10.1145/3656412) Poorva Garg, Steven Holtzen, Guy Van den Broeck, Todd Millstein. PLDI 2024.
+- Alea incorporates *HyBit*, a bit blasting-based probabilistic programming system for discrete-continuous probabilistic programs. See [hybrid/](hybrid/) for more.
+
+[Scaling Integer Arithmetic in Probabilistic Programs.](https://dl.acm.org/doi/10.5555/3625834.3625859) William X. Cao, Poorva Garg, Ryan Tjoa, Steven Holtzen, Todd Millstein, Guy Van den Broeck. UAI 2023.
