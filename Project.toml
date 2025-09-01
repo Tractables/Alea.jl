@@ -23,9 +23,13 @@ SymPy = "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"
 SymbolicNumericIntegration = "78aadeae-fbc0-11eb-17b6-c7ec0477ba9e"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
-[sources]
-CUDD = {rev = "m1compat", url = "https://github.com/rtjoa/CUDD.jl.git"}
-IRTools = {rev = "loop-break-patch", url = "https://github.com/PoorvaGarg/IRTools.jl"}
+[sources.CUDD]
+rev = "m1compat"
+url = "https://github.com/rtjoa/CUDD.jl.git"
+
+[sources.IRTools]
+rev = "loop-break-patch"
+url = "https://github.com/PoorvaGarg/IRTools.jl"
 
 [compat]
 BenchmarkTools = "1"
@@ -41,4 +45,5 @@ Plots = "1"
 PrecompileTools = "1"
 SymPy = "2.3.3"
 SymbolicNumericIntegration = "1"
+Symbolics = "6"
 julia = "1.11"
