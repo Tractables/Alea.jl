@@ -1,49 +1,58 @@
 using Dice
-using DelimitedFiles
 
+x_vec = Vector(undef, 28)
+y_vec = Vector(undef, 28)
+final = Vector(undef, 28)
+for bits in 3:30
 
+    r_flips = Vector(undef, 2*bits)
+    g_flips = Vector(undef, 2*bits)
+    b_flips = Vector(undef, 2*bits)
 
-for bits in 3:8
+    y_flips = Vector(undef, 2*bits)
+    co_flips = Vector(undef, 2*bits)
+    cg_flips = Vector(undef, 2*bits)
+    for i in 2*bits:-1:bits+1
+        y_flips[i], co_flips[i], cg_flips[i] = flip(0.5), flip(0.5), flip(0.5)
+    end
 
-    r_flips = Vector(undef, bits)
-    g_flips = Vector(undef, bits)
-    b_flips = Vector(undef, bits)
-
-    y_flips = Vector(undef, bits + 2)
-    co_flips = Vector(undef, bits + 2)
-    cg_flips = Vector(undef, bits + 2)
-
-    for i in 1:bits
+    for i in bits:-1:1
         r_flips[i], g_flips[i], b_flips[i] = flip(0.5), flip(0.5), flip(0.5)
         y_flips[i], co_flips[i], cg_flips[i] = flip(0.5), flip(0.5), flip(0.5)
     end
 
-    for i in 1:2
-        y_flips[i + bits], co_flips[i + bits], cg_flips[i + bits] = flip(0.5), flip(0.5), flip(0.5)
-    end
 
-    Df = DistFix{bits + 3, 2}
-    red = Df([false, r_flips..., false, false])
-    green = Df([false, g_flips..., false, false])
-    blue = Df([false, b_flips..., false, false])
+
+    Df = DistFix{2*bits+1, bits-3}
+    red = Df([[false for i in 1:bits]..., r_flips[1:bits]...])
+    green = Df([false, g_flips...])
+    blue = Df([false, b_flips...])
+    # red = Df([false, r_flips..., false, false])
+    # green = Df([false, g_flips..., false, false])
+    # blue = Df([false, b_flips..., false, false])
 
     y = Df([false, y_flips...])
     co = Df([false, co_flips...])
     cg = Df([false, cg_flips...])
 
-    y_comp = red/Df(4.0) + green/Df(2.0) + blue/Df(4.0)
+    y_comp = red/Df(4.0) + green/Df(2.0) + blue/Df(8.0)
     co_comp = red/Df(2.0) - blue/Df(2.0) + Df(2.0^(bits-1))
-    cg_comp = Df(2.0^(bits-1))-red/Df(4.0) + green/Df(2.0) - blue/Df(4.0)
+    cg_comp = Df(2.0^(bits-1))-red/Df(8.0) + green/Df(2.0) - blue/Df(4.0)
 
 
     final = prob_equals(y, y_comp) & prob_equals(co, co_comp) & prob_equals(cg, cg_comp)
-    @show bits, num_nodes(final)
+    # xtemp, ytemp = bits, num_nodes(final[bits-2])
+    # @show xtemp, ytemp
+    # x_vec[bits-2] = xtemp
+    # y_vec[bits-2] = ytemp
     # @show pr(y_comp >= Df(0.0))
     # @show pr(co_comp >= Df(0.0))
     # @show pr(cg_comp >= Df(0.0)) 
 end
 
-dump_dot(final, filename = "rgb2ycc.dot")
+using Plots
+scatter(x_vec, y_vec)
+dump_dot(final[2], filename = "rgb2ycc.dot")
 
 final = red + green
 
