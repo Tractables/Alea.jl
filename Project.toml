@@ -1,7 +1,7 @@
 name = "Alea"
 uuid = "94eeadfc-1ba6-40b7-9ed8-dee71557d525"
-authors = ["Guy Van den Broeck <guyvdb@gmail.com>"]
 version = "0.1.0"
+authors = ["Guy Van den Broeck <guyvdb@gmail.com>"]
 
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
@@ -47,5 +47,5 @@ Plots = "1"
 PrecompileTools = "1"
 SymPy = "2.3.3"
 SymbolicNumericIntegration = "1"
-Symbolics = "6"
+Symbolics = "6, 7"
 julia = "1.11"
