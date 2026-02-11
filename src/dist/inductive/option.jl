@@ -3,21 +3,19 @@ export Opt
 
 module Opt
     using Alea
-    @type T{A} = None() | Some(A)
-
-    Some(x) = Some(typeof(x), x)
+    @type T{A} = OptNone() | OptSome(A)
 
     function bind(f, T, x::Opt.T)
         @match x [
-            None() -> None(T),
-            Some(x) -> f(x)
+            OptNone() -> OptNone(T),
+            OptSome(x) -> f(x)
         ]
     end
 
     function map(f, T, x::Opt.T)
         @match x [
-            None() -> None(T),
-            Some(x) -> Some(T, f(x))
+            OptNone() -> OptNone(T),
+            OptSome(x) -> OptSome(T, f(x))
         ]
     end
 end
