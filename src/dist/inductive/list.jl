@@ -31,9 +31,9 @@ end
 
 function one_of(l::List{T})::Opt.T{T} where T <: Dist
     match(l, [
-        :Nil => () -> Opt.None(T),
+        :Nil => () -> Opt.OptNone(T),
         :Cons => (x, xs) -> @alea_ite if flip_reciprocal(length(l))
-            Opt.Some(T, x)
+            Opt.OptSome(T, x)
         else
             one_of(xs)
         end
