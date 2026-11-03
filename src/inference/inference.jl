@@ -175,4 +175,10 @@ include("cudd/wmc.jl")
 # - pr(::Dist, evidence=..., errors=...)
 include("pr.jl")
 
+# Exact inference by tddlog on a ProbLog program of the circuit.
+# Notable exports:
+# - Tddlog(; command), the algorithm of pr(...; algo = Tddlog())
+# - write_problog(::IO, x), the circuit as a ProbLog program
+include("tddlog.jl")
+
 include("sample.jl")
