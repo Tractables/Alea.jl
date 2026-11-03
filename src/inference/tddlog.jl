@@ -149,9 +149,16 @@ function write_circuit(io::IO, atoms, observations, label)
             println(io, c.names[g], " :- ", lit(g.y), ".")
         end
     end
+    # an impossible observation: evidence on an atom defined false, which
+    # ProbLog and tddlog find inconsistent, written once
+    impossible = false
     for o in observations
         if o isa Bool
-            o || println(io, "evidence(false_observation, true).")
+            if !o && !impossible
+                println(io, "false_observation :- fail.")
+                println(io, "evidence(false_observation, true).")
+                impossible = true
+            end
             continue
         end
         name, neg = circuit_literal(c, o, false)
@@ -302,9 +309,7 @@ function pr_impl(algo::Tddlog, evidence, queries::Vector{JointQuery}, errors, do
         isempty(prob_errors) || throw(ProbException(prob_errors))
     end
 
-    # the worlds of every query given the evidence; tddlog's grounder refuses
-    # the observation of false, which no rule defines
-    evidence === false && error("Cannot find any possible worlds: the evidence has probability zero")
+    # the worlds of every query given the evidence
     atoms = reduce(vcat, (world_atoms("q$k", q.bits) for (k, q) in enumerate(queries)); init = Any[])
     answers = run_tddlog(algo, atoms, evidence === true ? AnyBool[] : AnyBool[evidence])
     isnothing(answers) && error("Cannot find any possible worlds: the evidence has probability zero")

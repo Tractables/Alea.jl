@@ -105,6 +105,11 @@ query(e1(4)).
     @test occursin("% 2 flips, 2 gates, 1 observations, 4 queries.\n0.25::f1.\n0.5::f2.\n", text)
     @test occursin("evidence(g2, true).\nq1 :- g1.\nquery(q1).\nq2.\nquery(q2).\nq3 :- fail.\nquery(q3).\nq4(0).\nquery(q4(0)).\n", text)
 
+    # An impossible observation is evidence on an atom defined false,
+    # which ProbLog and tddlog find inconsistent.
+    text = sprint(io -> write_problog(io, flip(0.5); evidence = false, label = "p"))
+    @test occursin("\nfalse_observation :- fail.\nevidence(false_observation, true).\nq1 :- f1.\n", text)
+
     @test_throws ErrorException write_problog(IOBuffer(), flip(0.5); query = :mean)
     @test_throws ErrorException write_problog(IOBuffer(), uniform(DistUInt{17}))
 end
@@ -173,6 +178,8 @@ same(d1, d2) = Set(k for (k, p) in d1 if p > 0) == Set(k for (k, p) in d2 if p >
         end
         @test pr(e; ignore_errors = true, algo)[true] ≈ 0
 
-        @test_throws ErrorException pr(flip(0.5); evidence = false, algo)
+        # tddlog finds the evidence inconsistent, and pr says so in the words of
+        # Cudd's assertion
+        @test_throws "Cannot find any possible worlds" pr(flip(0.5); evidence = false, algo)
     end
 end
