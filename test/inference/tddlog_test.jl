@@ -157,6 +157,8 @@ same(d1, d2) = Set(k for (k, p) in d1 if p > 0) == Set(k for (k, p) in d2 if p >
         @test sum(p for ((_, v), p) in d if v == 2) ≈ 0.405 / 0.72
         # By hand: given y != 0, y is uniform on -3, -2, -1, 1, 2.
         @test expectation(tiny_expectation(); algo) ≈ -0.6
+        @test expectation(tiny_expectation(); algo) ≈ expectation(tiny_expectation())
+        @test same(pr(tiny_expectation(); algo), pr(tiny_expectation()))
 
         # A probabilistic error stops inference, as with Cudd.
         e = alea() do

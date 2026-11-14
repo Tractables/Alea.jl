@@ -8,7 +8,7 @@ Alea is a probabilistic programming system built in Julia, based on the discrete
 
 ## Installation
 
-Install Julia 1.8.5 or higher using [these instructions](https://julialang.org/downloads/platform/).
+Install Julia 1.11 or higher using [these instructions](https://julialang.org/downloads/platform/).
 
 Then, install SymPy using the following command:
 
@@ -46,6 +46,14 @@ x = uniform(DistUInt{4}, 0, 10) + DistUInt{4}(3)
 pr(x; evidence = prob_equals(x, DistUInt{4}(5)) | flip(0.4), algo = Tddlog())
 expectation(x; algo = Tddlog())
 ```
+
+The backend runs the `tddlog` command, which is installed apart from
+Alea. Either download the archive for your platform from tddlog's
+[releases](https://github.com/Tractables/tddlog/releases) (Linux x86-64
+and ARM64, macOS, Windows), unpack it and put the `tddlog` binary on the
+PATH, or build it from [crates.io](https://crates.io/crates/tddlog) with
+`cargo install --locked tddlog` (Rust 1.88 or newer, a C++20 compiler and
+`make`). Check it with `tddlog --version`.
 
 `Tddlog()` runs the command in `ENV["TDDLOG"]` or `tddlog` on the PATH;
 `Tddlog(command = `...`)` names another. `write_problog(io, x)` writes the

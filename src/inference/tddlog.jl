@@ -14,9 +14,6 @@ export Tddlog, write_problog
 # rules, a ! a negated literal, and every observation `evidence(...)`. The
 # rules come in a depth-first post-order from the queries and then the
 # observations, every gate after the gates it reads.
-#
-# The writer is tddlog's scripts/alea2problog.jl (Apache License 2.0), moved
-# here.
 
 """
     Tddlog(; command = default_tddlog_command())
