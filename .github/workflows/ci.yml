@@ -19,21 +19,35 @@ jobs:
       - uses: actions/checkout@v2
       - uses: julia-actions/setup-julia@latest
         with:
-          version: 1.10.5
-          
+          version: '1.11'
+
       - name: Install Latex Dependencies
         run:
           sudo apt update && sudo apt install -y pdf2svg texlive-latex-base texlive-binaries texlive-latex-extra texlive-luatex
 
       - name: Install SymPy
-        run: 
+        run:
           pip3 install sympy
 
+      # The release binary of tddlog, for the tests of the Tddlog backend
+      # (test/inference/tddlog_test.jl), which are skipped without it.
+      - name: Install tddlog
+        env:
+          TDDLOG_VERSION: 0.1.1
+          TDDLOG_SHA256: 6576361e7d8153dd287d24c70d4392cb87ab7e616b4e85313a16b673e380ea65
+        run: |
+          name=tddlog-v$TDDLOG_VERSION-x86_64-unknown-linux-gnu
+          cd "$RUNNER_TEMP"
+          curl -sSfLO "https://github.com/Tractables/tddlog/releases/download/v$TDDLOG_VERSION/$name.tar.gz"
+          echo "$TDDLOG_SHA256  $name.tar.gz" | sha256sum -c -
+          tar xzf "$name.tar.gz"
+          "$RUNNER_TEMP/$name/tddlog" --version
+          echo "$RUNNER_TEMP/$name" >> "$GITHUB_PATH"
+
+      # The forks of CUDD.jl and IRTools.jl come from Project.toml's [sources].
       - name: Instantiate Packages
         run: |
           julia --project -e 'using Pkg; Pkg.instantiate(); Pkg.build();'
-          julia --project -e 'using Pkg; Pkg.add(url="https://github.com/PoorvaGarg/IRTools.jl", rev="loop-break-patch"); Pkg.add("SymPy");'
-          julia --project -e "import Pkg;Pkg.add(url=\"https://github.com/rtjoa/CUDD.jl.git\",rev=\"m1compat\")"
 
       - name: Unit Tests
         run:
