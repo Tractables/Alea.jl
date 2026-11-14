@@ -8,7 +8,7 @@ Alea is a probabilistic programming system built in Julia, based on the discrete
 
 ## Installation
 
-Install Julia 1.8.5 or higher using [these instructions](https://julialang.org/downloads/platform/).
+Install Julia 1.11 or higher using [these instructions](https://julialang.org/downloads/platform/).
 
 Then, install SymPy using the following command:
 
@@ -31,6 +31,54 @@ Finally, see the following:
 
 * [examples/](examples/) contains simple examples to get started with using Alea Julia package to write probabilistic programs.
 * [test/](test/) contains unit test cases for all the functions and data types implemented.
+
+## tddlog backend
+
+By default `pr` compiles the queries and the evidence to a BDD with CUDD.
+`algo = Tddlog()` instead hands the same Boolean circuit to
+[tddlog](https://github.com/Tractables/tddlog), which compiles it bottom-up
+into tree decision diagrams:
+
+```julia
+using Alea
+
+x = uniform(DistUInt{4}, 0, 10) + DistUInt{4}(3)
+pr(x; evidence = prob_equals(x, DistUInt{4}(5)) | flip(0.4), algo = Tddlog())
+expectation(x; algo = Tddlog())
+```
+
+The backend runs the `tddlog` command, which is installed apart from
+Alea. Either download the archive for your platform from tddlog's
+[releases](https://github.com/Tractables/tddlog/releases) (Linux x86-64
+and ARM64, macOS, Windows), unpack it and put the `tddlog` binary on the
+PATH, or build it from [crates.io](https://crates.io/crates/tddlog) with
+`cargo install --locked tddlog` (Rust 1.88 or newer, a C++20 compiler and
+`make`). Check it with `tddlog --version`.
+
+`Tddlog()` runs the command in `ENV["TDDLOG"]` or `tddlog` on the PATH;
+`Tddlog(command = `...`)` names another. `write_problog(io, x)` writes the
+circuit Alea builds for `x` (an `@alea` block's result, its observations as
+evidence, or a distribution) as a ProbLog program without running
+inference, so that tddlog can be run on it directly:
+
+```julia
+open(io -> write_problog(io, @alea begin
+    a = flip(0.3)
+    observe(a | flip(0.6))
+    a
+end), "program.pl", "w")
+```
+
+```bash
+tddlog program.pl
+```
+
+Each Boolean of the value is a query `qK`, and each number a query
+`qK(U)` for every world U of its bits that are not constant;
+`write_problog(io, x; query = :expectation)` asks for each bit instead,
+`eK(I)`, from which the expectation follows. Flips are named `fN` in the
+order Alea created them. `write_problog` and `Tddlog` query at most 16 bits
+that are not constant at once.
 
 ## Papers
 
